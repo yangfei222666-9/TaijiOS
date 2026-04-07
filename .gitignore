@@ -1,0 +1,45 @@
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+auth.json
+api_keys.json
+
+# Runtime data
+data/
+*.jsonl
+*.db
+*.db-shm
+*.db-wal
+lancedb_data/
+lancedb_store/
+lancedb_memory*/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Binary
+*.npy
+*.pth
+*.bin
