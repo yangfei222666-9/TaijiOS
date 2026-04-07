@@ -301,22 +301,89 @@ def decay_stale_experiences(max_idle_days: int = 30) -> int:
     return decayed
 
 
-def get_quality_report() -> Dict[str, Any]:
-    """Generate a quality report of all experiences."""
+def get_quality_report(*, cycle_id: str = "", sample_window: str = "") -> Dict[str, Any]:
+    """
+    Generate a full quality report — designed to be consumed by gate, worker, and daily reports.
+    """
+    import time as _time
+    from datetime import datetime, timezone
+
     idx = _load_index()
+    now = _time.time()
     total = len(idx)
-    quarantined = sum(1 for e in idx if e.get("quarantined"))
-    github = sum(1 for e in idx if "github_learning" in (e.get("key") or e.get("matched_key") or ""))
-    with_stats = sum(1 for e in idx if e.get("stats", {}).get("hit_count", 0) > 0)
-    high_conf = sum(1 for e in idx if float(e.get("confidence", 0)) >= 0.8)
-    low_conf = sum(1 for e in idx if float(e.get("confidence", 0)) < 0.4)
+    quarantined_list = [e for e in idx if e.get("quarantined")]
+    active_list = [e for e in idx if not e.get("quarantined")]
+
+    # Expired: TTL set and exceeded
+    expired = 0
+    for e in idx:
+        ttl = e.get("ttl_days", 0)
+        if ttl > 0 and e.get("created_at", 0):
+            if (now - e["created_at"]) > ttl * 86400:
+                expired += 1
+
+    # Decayed: last_seen > 30 days ago (would be decayed by decay_stale_experiences)
+    decayed = 0
+    for e in idx:
+        last_seen = e.get("stats", {}).get("last_seen", "")
+        if not last_seen:
+            continue
+        try:
+            dt = datetime.fromisoformat(last_seen.replace("+00:00", "+00:00"))
+            if (now - dt.timestamp()) / 86400 > 30:
+                decayed += 1
+        except (ValueError, TypeError):
+            pass
+
+    # Rollback candidates: active but confidence < 0.4 and hit_count >= 3
+    rollback_candidates = []
+    for e in active_list:
+        stats = e.get("stats", {})
+        conf = float(e.get("confidence", 0.5))
+        hits = stats.get("hit_count", 0)
+        if conf < 0.4 and hits >= 3:
+            rollback_candidates.append({
+                "experience_id": e.get("source_experience_id", ""),
+                "key": e.get("key") or e.get("matched_key", ""),
+                "confidence": conf,
+                "hit_count": hits,
+                "success_rate": round(stats.get("success", 0) / max(1, stats.get("success", 0) + stats.get("fail", 0)), 3),
+            })
+
+    # Top good: highest confidence active entries with usage
+    scored = [(e, float(e.get("confidence", 0.5))) for e in active_list if e.get("stats", {}).get("hit_count", 0) > 0]
+    scored.sort(key=lambda x: -x[1])
+    top_good = [{"experience_id": e.get("source_experience_id", ""), "confidence": c,
+                 "hit_count": e.get("stats", {}).get("hit_count", 0)} for e, c in scored[:5]]
+
+    # Top bad: lowest confidence active entries with usage
+    top_bad = [{"experience_id": e.get("source_experience_id", ""), "confidence": c,
+                "hit_count": e.get("stats", {}).get("hit_count", 0)} for e, c in scored[-5:]] if len(scored) > 5 else []
+
+    github_count = sum(1 for e in idx if "github_learning" in (e.get("key") or e.get("matched_key") or ""))
 
     return {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "total": total,
-        "quarantined": quarantined,
-        "active": total - quarantined,
-        "github_learning": github,
-        "with_usage_stats": with_stats,
-        "high_confidence": high_conf,
-        "low_confidence": low_conf,
+        "active": total - len(quarantined_list),
+        "quarantined": len(quarantined_list),
+        "expired": expired,
+        "decayed": decayed,
+        "github_learning": github_count,
+        "top_good": top_good,
+        "top_bad": top_bad,
+        "rollback_candidates": rollback_candidates,
+        "rules_applied": ["ttl_check", "quarantine_gate", "confidence_decay", "auto_quarantine_30pct"],
+        "sample_window": sample_window,
+        "latest_cycle_id": cycle_id,
     }
+
+
+_REPORT_PATH = Path(__file__).parent / "experience_quality_latest.json"
+
+
+def generate_report(*, cycle_id: str = "", sample_window: str = "") -> Dict[str, Any]:
+    """Generate quality report and write to experience_quality_latest.json."""
+    report = get_quality_report(cycle_id=cycle_id, sample_window=sample_window)
+    _REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    return report

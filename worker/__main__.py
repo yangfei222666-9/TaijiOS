@@ -258,6 +258,14 @@ def main():
         status.current_mode = "idle"
         status.save()
 
+        # Refresh experience quality report after each cycle
+        try:
+            from coherent_engine.pipeline.experience_retrieval import generate_report
+            generate_report(cycle_id=f"worker-cycle-{cycle}")
+            log.info("[worker] Experience quality report refreshed")
+        except Exception as e:
+            log.debug("[worker] Quality report skip: %s", e)
+
         log.info("[worker] Cycle %d done. Next in %ds. (Ctrl+C to stop)", cycle, args.interval)
 
         # Sleep with shutdown check
