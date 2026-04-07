@@ -266,6 +266,24 @@ def main():
         except Exception as e:
             log.debug("[worker] Quality report skip: %s", e)
 
+        # Refresh learning pipeline snapshot after each cycle
+        try:
+            from github_learning.learning_snapshot import generate_learning_snapshot
+            generate_learning_snapshot(cycle_id=f"worker-cycle-{cycle}")
+            log.info("[worker] Learning snapshot refreshed")
+        except Exception as e:
+            log.debug("[worker] Learning snapshot skip: %s", e)
+
+        # Auto-promote probation experiences that have proven themselves
+        try:
+            from github_learning.manifest import auto_promote, sync_to_index
+            promoted = auto_promote()
+            if promoted:
+                sync_to_index()
+                log.info("[worker] Auto-promoted %d experiences: %s", len(promoted), promoted)
+        except Exception as e:
+            log.debug("[worker] Auto-promote skip: %s", e)
+
         log.info("[worker] Cycle %d done. Next in %ds. (Ctrl+C to stop)", cycle, args.interval)
 
         # Sleep with shutdown check

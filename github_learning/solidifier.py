@@ -60,7 +60,7 @@ def solidify_as_experience(mechanism: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def solidify_all() -> List[Dict[str, Any]]:
-    """Solidify all approved, un-solidified mechanisms."""
+    """Solidify all approved, un-solidified mechanisms via manifest."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     approved = _load_approved()
     already = _already_solidified()
@@ -70,22 +70,40 @@ def solidify_all() -> List[Dict[str, Any]]:
         print("No new approved mechanisms to solidify.")
         return []
 
+    from .manifest import admit, sync_to_index
+
     results = []
     now = datetime.utcnow().isoformat() + "Z"
 
     with open(SOLIDIFIED_LOG, "a", encoding="utf-8") as f:
         for m in new_items:
             exp = solidify_as_experience(m)
+
+            # Admit to manifest (the only path into experience_index)
+            experience_key = f"*+*+github_learning.{m.get('category', 'unknown')}.{m['mechanism_id']}"
+            admit(
+                mechanism_id=m["mechanism_id"],
+                experience_key=experience_key,
+                content=m.get("description", ""),
+                inject_to="planner_system",
+                confidence=0.5,
+                source_repo=m.get("repo", ""),
+                gate_decision_id=m["mechanism_id"],
+                category=m.get("category", ""),
+            )
+
             record = {
                 "mechanism_id": m["mechanism_id"],
                 "repo": m.get("repo", ""),
-                "path": "experience",
+                "path": "manifest",
                 "experience_payload": exp,
                 "solidified_at": now,
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
             results.append(record)
-            print(f"  Solidified: {m['mechanism_id']} ({m.get('repo')}) -> experience")
+            print(f"  Solidified: {m['mechanism_id']} ({m.get('repo')}) -> manifest (probation)")
 
-    print(f"\nSolidified: {len(results)} mechanisms")
+    # Sync manifest to experience_index
+    synced = sync_to_index()
+    print(f"\nSolidified: {len(results)} mechanisms -> manifest -> experience_index ({synced} synced)")
     return results

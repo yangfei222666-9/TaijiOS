@@ -4,8 +4,9 @@ Usage:
     python -m github_learning discover [--limit N] [--dry-run]
     python -m github_learning analyze [--limit N] [--dry-run]
     python -m github_learning digest
-    python -m github_learning gate list|review|approve|reject <id> [--note/--reason]
+    python -m github_learning gate list|review|approve|reject|quality|worker
     python -m github_learning solidify
+    python -m github_learning manifest list|sync|promote|revoke <id>
     python -m github_learning auto [--limit N]
 """
 import argparse
@@ -39,7 +40,16 @@ def main():
     g.add_argument("--window", type=int, default=2, help="Worker check window in hours (default: 2)")
 
     # solidify
-    sub.add_parser("solidify", help="Solidify approved mechanisms")
+    sub.add_parser("solidify", help="Solidify approved mechanisms via manifest")
+
+    # manifest
+    m = sub.add_parser("manifest", help="Reviewed baseline manifest")
+    m.add_argument("action", choices=["list", "sync", "promote", "revoke"])
+    m.add_argument("id", nargs="?", default="")
+    m.add_argument("--reason", type=str, default="")
+
+    # snapshot
+    sub.add_parser("snapshot", help="Generate learning pipeline snapshot")
 
     # auto
     au = sub.add_parser("auto", help="Run discover+analyze+digest")
@@ -97,6 +107,30 @@ def main():
     elif args.command == "solidify":
         from .solidifier import solidify_all
         solidify_all()
+
+    elif args.command == "manifest":
+        from . import manifest as m_mod
+        if args.action == "list":
+            m_mod.print_manifest()
+        elif args.action == "sync":
+            n = m_mod.sync_to_index()
+            print(f"Synced {n} entries from manifest to experience_index")
+        elif args.action == "promote":
+            if not args.id:
+                print("Usage: manifest promote <mechanism_id>")
+                return 1
+            ok = m_mod.promote(args.id)
+            print(f"{'Promoted' if ok else 'Not found'}: {args.id}")
+        elif args.action == "revoke":
+            if not args.id:
+                print("Usage: manifest revoke <mechanism_id>")
+                return 1
+            ok = m_mod.revoke(args.id, reason=args.reason)
+            print(f"{'Revoked' if ok else 'Not found'}: {args.id}")
+
+    elif args.command == "snapshot":
+        from .learning_snapshot import print_learning_snapshot
+        print_learning_snapshot()
 
     elif args.command == "auto":
         from .discoverer import discover
