@@ -24,14 +24,16 @@ TaijiOS is a framework for building AI systems that improve themselves through e
 ## Status 项目状态
 
 **Verified 已验证:**
+
 - Core event engine, scheduler, reactor, circuit breaker
 - LLM Gateway: auth, policy, failover (12/12 extreme scenarios passed), audit
 - Self-healing pipeline: 20/20 jobs auto-healed (score 0.37→0.95)
+- Webhook delivery chain: retry + delivery confirmation + DLQ separation (3/3 PASS)
 - GitHub learning pipeline: discover→analyze→digest→gate→solidify (small sample)
 - Experience retrieval and injection into planner
 
 **In Progress 进行中:**
-- Webhook delivery confirmation chain (retry + DLQ)
+
 - Experience flywheel at larger scale
 - Self-healing in production main loop
 - Quickstart that works without Ollama
