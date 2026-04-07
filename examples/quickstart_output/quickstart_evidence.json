@@ -1,5 +1,5 @@
 {
-  "ts": "2026-04-07T04:24:29Z",
+  "ts": "2026-04-07T04:27:39Z",
   "total_tasks": 3,
   "succeeded": 3,
   "self_healed": 3,
@@ -13,14 +13,14 @@
       "trace": {
         "task_id": "quickstart-001",
         "status": "succeeded",
-        "started_at": 1775535869.6945286,
-        "ended_at": 1775535869.6945286,
+        "started_at": 1775536059.978313,
+        "ended_at": 1775536059.978313,
         "steps": [
           {
             "name": "generate:rev1",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "revision": 1,
               "guidance": {},
@@ -31,8 +31,8 @@
           {
             "name": "validate:rev1",
             "status": "failed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "score": 0.35,
               "passed": false,
@@ -53,8 +53,8 @@
           {
             "name": "generate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "revision": 2,
               "guidance": {
@@ -68,8 +68,8 @@
           {
             "name": "validate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "score": 0.9,
               "passed": true,
@@ -81,8 +81,8 @@
           {
             "name": "deliver",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "delivered": true,
               "final_score": 0.9
@@ -101,14 +101,14 @@
       "trace": {
         "task_id": "quickstart-002",
         "status": "succeeded",
-        "started_at": 1775535869.6945286,
-        "ended_at": 1775535869.6945286,
+        "started_at": 1775536059.978313,
+        "ended_at": 1775536059.978313,
         "steps": [
           {
             "name": "generate:rev1",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "revision": 1,
               "guidance": {},
@@ -119,8 +119,8 @@
           {
             "name": "validate:rev1",
             "status": "failed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "score": 0.35,
               "passed": false,
@@ -141,8 +141,8 @@
           {
             "name": "generate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "revision": 2,
               "guidance": {
@@ -156,8 +156,8 @@
           {
             "name": "validate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "score": 0.9,
               "passed": true,
@@ -169,8 +169,8 @@
           {
             "name": "deliver",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.978313,
+            "ended_at": 1775536059.978313,
             "output": {
               "delivered": true,
               "final_score": 0.9
@@ -189,14 +189,14 @@
       "trace": {
         "task_id": "quickstart-003",
         "status": "succeeded",
-        "started_at": 1775535869.6945286,
-        "ended_at": 1775535869.6945286,
+        "started_at": 1775536059.9793155,
+        "ended_at": 1775536059.9793155,
         "steps": [
           {
             "name": "generate:rev1",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.9793155,
+            "ended_at": 1775536059.9793155,
             "output": {
               "revision": 1,
               "guidance": {},
@@ -207,8 +207,8 @@
           {
             "name": "validate:rev1",
             "status": "failed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.9793155,
+            "ended_at": 1775536059.9793155,
             "output": {
               "score": 0.35,
               "passed": false,
@@ -229,8 +229,8 @@
           {
             "name": "generate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.9793155,
+            "ended_at": 1775536059.9793155,
             "output": {
               "revision": 2,
               "guidance": {
@@ -244,8 +244,8 @@
           {
             "name": "validate:rev2",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.9793155,
+            "ended_at": 1775536059.9793155,
             "output": {
               "score": 0.9,
               "passed": true,
@@ -257,8 +257,8 @@
           {
             "name": "deliver",
             "status": "completed",
-            "started_at": 1775535869.6945286,
-            "ended_at": 1775535869.6945286,
+            "started_at": 1775536059.9793155,
+            "ended_at": 1775536059.9793155,
             "output": {
               "delivered": true,
               "final_score": 0.9

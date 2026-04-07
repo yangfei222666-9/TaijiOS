@@ -1,0 +1,15 @@
+{
+  "started_at": "2026-04-07T04:29:54Z",
+  "current_mode": "stopped",
+  "cycles_completed": 1,
+  "last_cycle_at": "2026-04-07T04:30:00Z",
+  "last_success_at": "2026-04-07T04:30:00Z",
+  "last_failure_at": "",
+  "last_error": "",
+  "jobs_processed": 0,
+  "repos_discovered": 0,
+  "repos_analyzed": 0,
+  "mechanisms_digested": 0,
+  "pid": 64692,
+  "updated_at": "2026-04-07T04:30:01Z"
+}
