@@ -267,7 +267,7 @@ def _load_recent_cycles(window_hours: int = 24) -> List[Dict[str, Any]]:
     return cycles
 
 
-def worker_check(window_hours: int = 24) -> Dict[str, Any]:
+def worker_check(window_hours: int = 2) -> Dict[str, Any]:
     """
     Run worker gate check. Verdict: PASS / WARN / FAIL.
     Checks: status file exists, recent cycles, no persistent errors, evidence paths.
@@ -329,16 +329,24 @@ def worker_check(window_hours: int = 24) -> Dict[str, Any]:
     if cycles and len(cycles) < 2 and window_hours >= 24:
         warnings.append(f"only {len(cycles)} cycle(s) in {window_hours}h window")
 
-    # Determine verdict
+    # Determine verdict and next_action
     if fail_reasons:
         verdict = "FAIL"
         reason = "; ".join(fail_reasons)
+        next_action = "restart worker and verify cycle output"
     elif warnings:
         verdict = "WARN"
         reason = "; ".join(warnings)
+        if current_mode == "stopped":
+            next_action = "restart worker"
+        elif last_error:
+            next_action = "investigate last_error, clear if resolved"
+        else:
+            next_action = "monitor next cycle"
     else:
         verdict = "PASS"
         reason = "all clear"
+        next_action = "none — worker healthy"
 
     summary = (f"worker: cycles={cycles_completed} recent={len(cycles)}/{window_hours}h "
                f"mode={current_mode} error={'yes' if last_error else 'no'}")
@@ -353,7 +361,9 @@ def worker_check(window_hours: int = 24) -> Dict[str, Any]:
         "recent_cycles": len(cycles),
         "current_mode": current_mode,
         "last_cycle_at": last_cycle_at,
+        "last_success_at": status.get("last_success_at", ""),
         "last_error": last_error[:200] if last_error else "",
+        "next_action": next_action,
         "evidence_paths": {
             "worker_status": str(WORKER_STATUS),
             "worker_cycles": str(WORKER_CYCLES),
@@ -371,7 +381,7 @@ def _save_gate_worker(result: Dict[str, Any]):
     )
 
 
-def print_worker(window_hours: int = 24):
+def print_worker(window_hours: int = 2):
     """Print worker gate check result."""
     result = worker_check(window_hours=window_hours)
     v = result["verdict"]
@@ -380,5 +390,7 @@ def print_worker(window_hours: int = 24):
         print(f"  Reason: {result['reason']}")
     if result.get("last_cycle_at"):
         print(f"  Last cycle: {result['last_cycle_at']}")
+    if result.get("next_action"):
+        print(f"  Next action: {result['next_action']}")
     print(f"  Evidence: {GATE_WORKER_LATEST}")
     print()

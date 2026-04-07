@@ -36,7 +36,7 @@ def main():
     g.add_argument("id", nargs="?", default="")
     g.add_argument("--note", type=str, default="")
     g.add_argument("--reason", type=str, default="")
-    g.add_argument("--window", type=int, default=24, help="Worker check window in hours")
+    g.add_argument("--window", type=int, default=2, help="Worker check window in hours (default: 2)")
 
     # solidify
     sub.add_parser("solidify", help="Solidify approved mechanisms")
