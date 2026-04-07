@@ -1,13 +1,13 @@
 """
 GitHub Learning Pipeline — Human review gate.
-CLI-based: list, review, approve, reject.
+CLI-based: list, review, approve, reject, quality.
 All decisions logged to gate_decisions.jsonl.
 """
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 DATA_DIR = Path(__file__).parent / "data"
 PENDING_DIR = DATA_DIR / "pending_review"
@@ -111,3 +111,117 @@ def print_review(mechanism_id: str):
     print(f"\nPitfall avoided:\n  {data.get('pitfall_avoided', '')[:300]}")
     print(f"\nEvidence: {data.get('evidence_url', '')}")
     print(f"{'='*60}")
+
+
+# ── Quality Gate ──────────────────────────────────────────────
+
+QUALITY_LATEST = Path(__file__).resolve().parents[1] / "coherent_engine" / "pipeline" / "experience_quality_latest.json"
+GATE_QUALITY_LATEST = DATA_DIR / "gate_quality_latest.json"
+
+
+def _load_quality_report() -> Optional[Dict[str, Any]]:
+    """Load the latest experience quality report."""
+    if not QUALITY_LATEST.exists():
+        return None
+    try:
+        return json.loads(QUALITY_LATEST.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def quality_check() -> Dict[str, Any]:
+    """
+    Run quality gate check against experience_quality_latest.json.
+    Returns verdict: PASS / WARN / FAIL with summary line.
+    """
+    report = _load_quality_report()
+
+    if report is None:
+        result = {
+            "verdict": "FAIL",
+            "reason": "experience_quality_latest.json not found",
+            "summary": "quality: MISSING",
+            "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "report": None,
+        }
+        _save_gate_quality(result)
+        return result
+
+    # Validate required fields
+    required = ["generated_at", "total", "active", "quarantined", "expired", "decayed", "rollback_candidates"]
+    missing = [f for f in required if f not in report]
+    if missing:
+        result = {
+            "verdict": "FAIL",
+            "reason": f"missing fields: {', '.join(missing)}",
+            "summary": f"quality: FAIL (missing {len(missing)} fields)",
+            "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "report": report,
+        }
+        _save_gate_quality(result)
+        return result
+
+    # Extract metrics
+    total = report.get("total", 0)
+    active = report.get("active", 0)
+    quarantined = report.get("quarantined", 0)
+    expired = report.get("expired", 0)
+    decayed = report.get("decayed", 0)
+    rollback = report.get("rollback_candidates", [])
+    rollback_count = len(rollback) if isinstance(rollback, list) else 0
+
+    summary = (f"quality: {total}/{active}/{quarantined}/{expired}/{decayed}/{rollback_count} "
+               f"(total/active/quarantined/expired/decayed/rollback)")
+
+    # Determine verdict
+    warnings = []
+    if rollback_count > 0:
+        warnings.append(f"{rollback_count} rollback candidates")
+    if quarantined > 0:
+        warnings.append(f"{quarantined} quarantined")
+
+    if warnings:
+        verdict = "WARN"
+        reason = "; ".join(warnings)
+    else:
+        verdict = "PASS"
+        reason = "all clear"
+
+    result = {
+        "verdict": verdict,
+        "reason": reason,
+        "summary": summary,
+        "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "report": report,
+    }
+    _save_gate_quality(result)
+    return result
+
+
+def _save_gate_quality(result: Dict[str, Any]):
+    """Write gate_quality_latest.json."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    GATE_QUALITY_LATEST.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def print_quality():
+    """Print quality gate check result."""
+    result = quality_check()
+    v = result["verdict"]
+    tag = {"PASS": "PASS", "WARN": "WARN", "FAIL": "FAIL"}[v]
+    print(f"\n[{tag}] {result['summary']}")
+    if result["reason"] != "all clear":
+        print(f"  Reason: {result['reason']}")
+    report = result.get("report")
+    if report:
+        top_good = report.get("top_good", [])
+        if top_good:
+            print(f"  Top good: {top_good[0].get('experience_id', '?')} (conf={top_good[0].get('confidence', '?')})")
+        rollback = report.get("rollback_candidates", [])
+        if rollback:
+            for rc in rollback:
+                print(f"  Rollback candidate: {rc.get('experience_id', '?')} (conf={rc.get('confidence', '?')}, hits={rc.get('hit_count', '?')})")
+    print(f"  Evidence: {GATE_QUALITY_LATEST}")
+    print()

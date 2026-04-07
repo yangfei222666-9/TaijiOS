@@ -32,7 +32,7 @@ def main():
 
     # gate
     g = sub.add_parser("gate", help="Human review gate")
-    g.add_argument("action", choices=["list", "review", "approve", "reject"])
+    g.add_argument("action", choices=["list", "review", "approve", "reject", "quality"])
     g.add_argument("id", nargs="?", default="")
     g.add_argument("--note", type=str, default="")
     g.add_argument("--reason", type=str, default="")
@@ -88,6 +88,8 @@ def main():
                 print("Usage: gate reject <mechanism_id>")
                 return 1
             g_mod.reject(args.id, reason=args.reason)
+        elif args.action == "quality":
+            g_mod.print_quality()
 
     elif args.command == "solidify":
         from .solidifier import solidify_all
