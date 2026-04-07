@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-04-07T10:54:34Z",
+  "baseline_version": 2,
+  "admitted_count": 2,
+  "probation_count": 0,
+  "active_count": 2,
+  "revoked_count": 0,
+  "total_hits": 10,
+  "total_success": 8,
+  "total_fail": 2,
+  "admitted": [
+    {
+      "mechanism_id": "3862fab3f05bc228",
+      "experience_id": "github_3862fab3f05bc228",
+      "admission_status": "active",
+      "baseline_version": 1,
+      "source_trace": {
+        "source_repo": "chrisworsey55/atlas-gic",
+        "gate_decision_id": "3862fab3f05bc228",
+        "category": "observability",
+        "pipeline": "github_learning"
+      },
+      "hit_count": 5,
+      "success": 4,
+      "fail": 1,
+      "confidence": 0.8465,
+      "quarantined": false
+    },
+    {
+      "mechanism_id": "4774133980e77b07",
+      "experience_id": "github_4774133980e77b07",
+      "admission_status": "active",
+      "baseline_version": 2,
+      "source_trace": {
+        "source_repo": "chrisworsey55/atlas-gic",
+        "gate_decision_id": "4774133980e77b07",
+        "category": "architecture",
+        "pipeline": "github_learning"
+      },
+      "hit_count": 5,
+      "success": 4,
+      "fail": 1,
+      "confidence": 0.8465,
+      "quarantined": false
+    }
+  ],
+  "evidence_paths": {
+    "manifest": "github_learning/data/reviewed_baseline_manifest.json",
+    "experience_index": "coherent_engine/pipeline/experience_index.json",
+    "gate_decisions": "github_learning/data/gate_decisions.jsonl"
+  }
+}

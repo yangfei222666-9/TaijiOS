@@ -1,0 +1,32 @@
+{
+  "verdict": "PASS",
+  "reason": "all clear",
+  "summary": "quality: 22/22/0/0/0/0 (total/active/quarantined/expired/decayed/rollback)",
+  "checked_at": "2026-04-07T08:06:17Z",
+  "report": {
+    "generated_at": "2026-04-07T07:41:57Z",
+    "total": 22,
+    "active": 22,
+    "quarantined": 0,
+    "expired": 0,
+    "decayed": 0,
+    "github_learning": 20,
+    "top_good": [
+      {
+        "experience_id": "github_61c647b41f3fcf3e",
+        "confidence": 0.789,
+        "hit_count": 4
+      }
+    ],
+    "top_bad": [],
+    "rollback_candidates": [],
+    "rules_applied": [
+      "ttl_check",
+      "quarantine_gate",
+      "confidence_decay",
+      "auto_quarantine_30pct"
+    ],
+    "sample_window": "",
+    "latest_cycle_id": "gate-test-1"
+  }
+}

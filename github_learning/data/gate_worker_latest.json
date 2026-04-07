@@ -1,0 +1,33 @@
+{
+  "verdict": "PASS",
+  "reason": "all clear",
+  "summary": "worker: cycles=3 recent=12/2h mode=idle error=no",
+  "checked_at": "2026-04-07T09:10:47Z",
+  "window_hours": 2,
+  "cycles_completed": 3,
+  "recent_cycles": 12,
+  "current_mode": "idle",
+  "last_cycle_at": "2026-04-07T09:10:33Z",
+  "last_success_at": "2026-04-07T09:10:33Z",
+  "last_error": "",
+  "next_action": "none - worker healthy",
+  "evidence_paths": {
+    "worker_status": "G:\\taijios_full_workspace\\taijios-oss\\worker\\worker_data\\worker_status.json",
+    "worker_cycles": "G:\\taijios_full_workspace\\taijios-oss\\worker\\worker_data\\worker_cycles.jsonl"
+  },
+  "status": {
+    "started_at": "2026-04-07T09:00:13Z",
+    "current_mode": "idle",
+    "cycles_completed": 3,
+    "last_cycle_at": "2026-04-07T09:10:33Z",
+    "last_success_at": "2026-04-07T09:10:33Z",
+    "last_failure_at": "",
+    "last_error": "",
+    "jobs_processed": 0,
+    "repos_discovered": 0,
+    "repos_analyzed": 0,
+    "mechanisms_digested": 0,
+    "pid": 54676,
+    "updated_at": "2026-04-07T09:10:33Z"
+  }
+}

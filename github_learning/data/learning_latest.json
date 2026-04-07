@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-04-07T09:43:19Z",
+  "latest_cycle_id": "",
+  "pipeline": {
+    "discovered": 3,
+    "analyzed": 3,
+    "digested": 9,
+    "solidified": 0
+  },
+  "gate": {
+    "pending": 9,
+    "approved": 0,
+    "rejected": 0
+  },
+  "manifest": {
+    "baseline_version": 0,
+    "total": 0,
+    "probation": 0,
+    "active": 0,
+    "revoked": 0,
+    "updated_at": ""
+  }
+}

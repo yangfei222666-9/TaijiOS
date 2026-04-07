@@ -1,0 +1,13 @@
+{
+  "mechanism_id": "94a29b752423b8d7",
+  "repo": "FareedKhan-dev/training-ai-agents",
+  "category": "communication",
+  "description": "{'specific_item': 'multi-agent coordination mechanisms', 'description': 'Designing inter-agent communication protocols and shared memory systems to ensure efficient parallel learning and knowledge exchange among multiple agents.', 'importance': 'Medium-High', 'mapped_module': 'Communication & Coordination'}",
+  "implementation_sketch": "",
+  "pitfall_avoided": "The project may encounter issues related to complexity explosion if the number of sub-agents or interactions grows beyond manageable levels. Tight coupling between different training components could lead to system instability or difficulty in isolating specific issues. The single-author bottleneck ",
+  "evidence_url": "https://github.com/FareedKhan-dev/training-ai-agents",
+  "risk_level": "medium",
+  "estimated_hours": 4.0,
+  "relevance_score": 0.75,
+  "digested_at": "2026-04-07T08:28:55.029546Z"
+}

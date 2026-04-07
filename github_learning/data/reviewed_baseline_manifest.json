@@ -1,0 +1,44 @@
+{
+  "baseline_version": 2,
+  "entries": [
+    {
+      "mechanism_id": "3862fab3f05bc228",
+      "experience_id": "github_3862fab3f05bc228",
+      "experience_key": "*+*+github_learning.observability.3862fab3f05bc228",
+      "content": "Automated observability: track agent performance, market impact, improvements over time. Key metrics dashboard + alerting on degradation.",
+      "inject_to": "planner_system",
+      "confidence": 0.5,
+      "admission_status": "active",
+      "admitted_at": "2026-04-07T10:52:07Z",
+      "baseline_version": 1,
+      "source_trace": {
+        "source_repo": "chrisworsey55/atlas-gic",
+        "gate_decision_id": "3862fab3f05bc228",
+        "category": "observability",
+        "pipeline": "github_learning"
+      },
+      "promoted_at": "2026-04-07T10:53:45Z",
+      "promotion_reason": "auto: 5 hits, 80% success rate"
+    },
+    {
+      "mechanism_id": "4774133980e77b07",
+      "experience_id": "github_4774133980e77b07",
+      "experience_key": "*+*+github_learning.architecture.4774133980e77b07",
+      "content": "Robust rollback mechanism: revert changes if performance declines or decisions lead to undesirable outcomes. Snapshot-based with automatic trigger on metric degradation.",
+      "inject_to": "planner_system",
+      "confidence": 0.5,
+      "admission_status": "active",
+      "admitted_at": "2026-04-07T10:52:07Z",
+      "baseline_version": 2,
+      "source_trace": {
+        "source_repo": "chrisworsey55/atlas-gic",
+        "gate_decision_id": "4774133980e77b07",
+        "category": "architecture",
+        "pipeline": "github_learning"
+      },
+      "promoted_at": "2026-04-07T10:53:45Z",
+      "promotion_reason": "auto: 5 hits, 80% success rate"
+    }
+  ],
+  "updated_at": "2026-04-07T10:53:45Z"
+}
