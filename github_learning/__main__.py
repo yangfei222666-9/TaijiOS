@@ -33,7 +33,7 @@ def main():
 
     # gate
     g = sub.add_parser("gate", help="Human review gate")
-    g.add_argument("action", choices=["list", "review", "approve", "reject", "quality", "worker"])
+    g.add_argument("action", choices=["list", "review", "approve", "reject", "quality", "worker", "success-lift"])
     g.add_argument("id", nargs="?", default="")
     g.add_argument("--note", type=str, default="")
     g.add_argument("--reason", type=str, default="")
@@ -103,6 +103,8 @@ def main():
             g_mod.print_quality()
         elif args.action == "worker":
             g_mod.print_worker(window_hours=args.window)
+        elif args.action == "success-lift":
+            g_mod.print_success_lift()
 
     elif args.command == "solidify":
         from .solidifier import solidify_all

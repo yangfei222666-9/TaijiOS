@@ -394,3 +394,76 @@ def print_worker(window_hours: int = 2):
         print(f"  Next action: {result['next_action']}")
     print(f"  Evidence: {GATE_WORKER_LATEST}")
     print()
+
+
+# ── Success-Lift Gate ─────────────────────────────────────────
+
+SUCCESS_LIFT_LATEST = DATA_DIR / "success_lift_latest.json"
+GATE_SUCCESS_LIFT_LATEST = DATA_DIR / "gate_success_lift_latest.json"
+
+
+def success_lift_check() -> Dict[str, Any]:
+    """Run success-lift gate check against success_lift_latest.json."""
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if not SUCCESS_LIFT_LATEST.exists():
+        result = {
+            "verdict": "FAIL",
+            "reason": "success_lift_latest.json not found - run examples/success_lift_test.py first",
+            "summary": "success-lift: MISSING",
+            "checked_at": now_str,
+            "report": None,
+        }
+        _save_gate_success_lift(result)
+        return result
+
+    try:
+        report = json.loads(SUCCESS_LIFT_LATEST.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        result = {
+            "verdict": "FAIL",
+            "reason": "success_lift_latest.json unparseable",
+            "summary": "success-lift: PARSE ERROR",
+            "checked_at": now_str,
+            "report": None,
+        }
+        _save_gate_success_lift(result)
+        return result
+
+    lift = report.get("lift", {})
+    verdict = report.get("verdict", "UNKNOWN")
+    reason = report.get("reason", "")
+    ga = report.get("group_a", {})
+    gb = report.get("group_b", {})
+
+    summary = (f"success-lift: A({ga.get('pass_rate','?')}/{ga.get('avg_score','?')}/{ga.get('avg_attempts','?')}) "
+               f"B({gb.get('pass_rate','?')}/{gb.get('avg_score','?')}/{gb.get('avg_attempts','?')}) "
+               f"lift(pass={lift.get('pass_rate','?')} score={lift.get('avg_score','?')} rounds={lift.get('avg_attempts_saved','?')})")
+
+    result = {
+        "verdict": verdict,
+        "reason": reason,
+        "summary": summary,
+        "checked_at": now_str,
+        "report": report,
+    }
+    _save_gate_success_lift(result)
+    return result
+
+
+def _save_gate_success_lift(result: Dict[str, Any]):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    GATE_SUCCESS_LIFT_LATEST.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def print_success_lift():
+    """Print success-lift gate check result."""
+    result = success_lift_check()
+    v = result["verdict"]
+    print(f"\n[{v}] {result['summary']}")
+    if result["reason"]:
+        print(f"  Reason: {result['reason']}")
+    print(f"  Evidence: {GATE_SUCCESS_LIFT_LATEST}")
+    print()
