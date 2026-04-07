@@ -1,15 +1,15 @@
 {
-  "started_at": "2026-04-07T08:28:15Z",
-  "current_mode": "stopped",
+  "started_at": "2026-04-07T09:00:13Z",
+  "current_mode": "idle",
   "cycles_completed": 3,
-  "last_cycle_at": "2026-04-07T08:39:09Z",
-  "last_success_at": "2026-04-07T08:39:09Z",
+  "last_cycle_at": "2026-04-07T09:10:33Z",
+  "last_success_at": "2026-04-07T09:10:33Z",
   "last_failure_at": "",
   "last_error": "",
   "jobs_processed": 0,
-  "repos_discovered": 3,
-  "repos_analyzed": 3,
-  "mechanisms_digested": 9,
-  "pid": 56028,
-  "updated_at": "2026-04-07T08:44:09Z"
+  "repos_discovered": 0,
+  "repos_analyzed": 0,
+  "mechanisms_digested": 0,
+  "pid": 54676,
+  "updated_at": "2026-04-07T09:10:33Z"
 }
