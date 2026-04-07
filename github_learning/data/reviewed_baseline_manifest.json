@@ -1,5 +1,5 @@
 {
-  "baseline_version": 2,
+  "baseline_version": 4,
   "entries": [
     {
       "mechanism_id": "3862fab3f05bc228",
@@ -38,7 +38,45 @@
       },
       "promoted_at": "2026-04-07T10:53:45Z",
       "promotion_reason": "auto: 5 hits, 80% success rate"
+    },
+    {
+      "mechanism_id": "nodeB-memory-sync-001",
+      "experience_id": "github_nodeB-memory-sync-001",
+      "experience_key": "*+*+cross_node.project_principle.memory_boundary",
+      "content": "Memory sync boundary: public governance content (principles, standards, thresholds, debts) can sync across nodes. SOUL/USER/private memory must NOT sync. Extract-only policy for node_private.",
+      "inject_to": "planner_system",
+      "confidence": 0.5,
+      "admission_status": "active",
+      "admitted_at": "2026-04-07T12:00:41Z",
+      "baseline_version": 3,
+      "source_trace": {
+        "source_repo": "TaijiOS_Exchange/node-B",
+        "gate_decision_id": "lesson-nodeB-memory-sync-001",
+        "category": "project_principle",
+        "pipeline": "github_learning"
+      },
+      "promoted_at": "2026-04-07T12:01:35Z",
+      "promotion_reason": "auto: 5 hits, 80% success rate"
+    },
+    {
+      "mechanism_id": "nodeB-supply-chain-001",
+      "experience_id": "github_nodeB-supply-chain-001",
+      "experience_key": "*+*+cross_node.reviewed_baseline.supply_chain_direction",
+      "content": "Learning supply chain order: L2(manifest admission) -> L1(learning_latest snapshot) -> L3(admission quarantine). All entries require baseline_version + source_trace. No bypass allowed.",
+      "inject_to": "planner_system",
+      "confidence": 0.5,
+      "admission_status": "active",
+      "admitted_at": "2026-04-07T12:00:41Z",
+      "baseline_version": 4,
+      "source_trace": {
+        "source_repo": "TaijiOS_Exchange/node-B",
+        "gate_decision_id": "lesson-nodeB-supply-chain-direction-001",
+        "category": "reviewed_baseline",
+        "pipeline": "github_learning"
+      },
+      "promoted_at": "2026-04-07T12:01:35Z",
+      "promotion_reason": "auto: 5 hits, 80% success rate"
     }
   ],
-  "updated_at": "2026-04-07T10:53:45Z"
+  "updated_at": "2026-04-07T12:01:35Z"
 }

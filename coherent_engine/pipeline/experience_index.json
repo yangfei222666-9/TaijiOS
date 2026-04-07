@@ -26,6 +26,44 @@
     }
   },
   {
+    "key": "*+*+cross_node.project_principle.memory_boundary",
+    "inject_to": "planner_system",
+    "content": "Memory sync boundary: public governance content (principles, standards, thresholds, debts) can sync across nodes. SOUL/USER/private memory must NOT sync. Extract-only policy for node_private.",
+    "confidence": 0.8465,
+    "source_experience_id": "github_nodeB-memory-sync-001",
+    "source_reason_code": "cross_node.project_principle.memory_boundary",
+    "baseline_version": 3,
+    "admission_status": "probation",
+    "stats": {
+      "success": 4,
+      "fail": 1,
+      "hit_count": 5,
+      "last_seen": "2026-04-07T12:01:35+00:00"
+    },
+    "created_at": 1775563241.7022302,
+    "ttl_days": 0,
+    "quarantined": true
+  },
+  {
+    "key": "*+*+cross_node.reviewed_baseline.supply_chain_direction",
+    "inject_to": "planner_system",
+    "content": "Learning supply chain order: L2(manifest admission) -> L1(learning_latest snapshot) -> L3(admission quarantine). All entries require baseline_version + source_trace. No bypass allowed.",
+    "confidence": 0.8465,
+    "source_experience_id": "github_nodeB-supply-chain-001",
+    "source_reason_code": "cross_node.reviewed_baseline.supply_chain_direction",
+    "baseline_version": 4,
+    "admission_status": "probation",
+    "stats": {
+      "success": 4,
+      "fail": 1,
+      "hit_count": 5,
+      "last_seen": "2026-04-07T12:01:35+00:00"
+    },
+    "created_at": 1775563241.7022302,
+    "ttl_days": 0,
+    "quarantined": true
+  },
+  {
     "key": "*+*+github_learning.observability.3862fab3f05bc228",
     "inject_to": "planner_system",
     "content": "Automated observability: track agent performance, market impact, improvements over time. Key metrics dashboard + alerting on degradation.",
@@ -60,6 +98,44 @@
       "last_seen": "2026-04-07T10:53:03+00:00"
     },
     "created_at": 1775559127.7202969,
+    "ttl_days": 0,
+    "quarantined": false
+  },
+  {
+    "key": "*+*+cross_node.project_principle.memory_boundary",
+    "inject_to": "planner_system",
+    "content": "Memory sync boundary: public governance content (principles, standards, thresholds, debts) can sync across nodes. SOUL/USER/private memory must NOT sync. Extract-only policy for node_private.",
+    "confidence": 0.8465,
+    "source_experience_id": "github_nodeB-memory-sync-001",
+    "source_reason_code": "cross_node.project_principle.memory_boundary",
+    "baseline_version": 3,
+    "admission_status": "active",
+    "stats": {
+      "success": 4,
+      "fail": 1,
+      "hit_count": 5,
+      "last_seen": "2026-04-07T12:01:35+00:00"
+    },
+    "created_at": 1775563241.7022302,
+    "ttl_days": 0,
+    "quarantined": false
+  },
+  {
+    "key": "*+*+cross_node.reviewed_baseline.supply_chain_direction",
+    "inject_to": "planner_system",
+    "content": "Learning supply chain order: L2(manifest admission) -> L1(learning_latest snapshot) -> L3(admission quarantine). All entries require baseline_version + source_trace. No bypass allowed.",
+    "confidence": 0.8465,
+    "source_experience_id": "github_nodeB-supply-chain-001",
+    "source_reason_code": "cross_node.reviewed_baseline.supply_chain_direction",
+    "baseline_version": 4,
+    "admission_status": "active",
+    "stats": {
+      "success": 4,
+      "fail": 1,
+      "hit_count": 5,
+      "last_seen": "2026-04-07T12:01:35+00:00"
+    },
+    "created_at": 1775563241.7022302,
     "ttl_days": 0,
     "quarantined": false
   }

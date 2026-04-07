@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-07T09:43:19Z",
+  "generated_at": "2026-04-07T11:02:22Z",
   "latest_cycle_id": "",
   "pipeline": {
     "discovered": 3,
@@ -8,16 +8,16 @@
     "solidified": 0
   },
   "gate": {
-    "pending": 9,
-    "approved": 0,
+    "pending": 7,
+    "approved": 2,
     "rejected": 0
   },
   "manifest": {
-    "baseline_version": 0,
-    "total": 0,
+    "baseline_version": 2,
+    "total": 2,
     "probation": 0,
-    "active": 0,
+    "active": 2,
     "revoked": 0,
-    "updated_at": ""
+    "updated_at": "2026-04-07T10:53:45Z"
   }
 }
