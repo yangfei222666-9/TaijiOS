@@ -85,26 +85,52 @@ TaijiOS is a framework for building AI systems that improve themselves through e
 
 ## Quick Start 快速开始
 
+30 seconds — no Ollama, no API keys, no GPU:
+
 ```bash
-# Clone
 git clone https://github.com/yangfei222666-9/TaijiOS.git
 cd TaijiOS
-
-# Install
 pip install -e .
+python examples/quickstart_minimal.py
+```
 
-# Start the LLM Gateway 启动网关
+You'll see:
+
+```
+--- Task: quickstart-001 ---
+  Status: succeeded
+  Attempts: 2
+  Final score: 0.9
+  Self-healed: YES (self-healed)
+
+  Results: 3/3 succeeded
+  Self-healed: 3/3
+  Events logged: 18
+```
+
+What just happened:
+1. 3 tasks entered the system
+2. Each failed validation on first attempt (score 0.35)
+3. The system auto-injected guidance and retried
+4. All 3 self-healed on second attempt (score 0.90)
+5. Evidence, traces, and event logs were generated
+
+This is the core TaijiOS loop: task → validate → fail → guidance → retry → deliver → evidence.
+
+For the full system with LLM Gateway:
+
+```bash
 export TAIJIOS_GATEWAY_ENABLED=1
 python -m aios.gateway --port 9200
 
-# Run the GitHub Learning Pipeline 运行学习管道
+# GitHub Learning Pipeline
 export GITHUB_TOKEN=your-github-token
-python -m github_learning discover --limit 10   # 发现项目
-python -m github_learning analyze                # LLM 分析
-python -m github_learning digest                 # 提炼机制
-python -m github_learning gate list              # 查看待审
-python -m github_learning gate approve <id>      # 人工批准
-python -m github_learning solidify               # 固化为经验
+python -m github_learning discover --limit 10
+python -m github_learning analyze
+python -m github_learning digest
+python -m github_learning gate list
+python -m github_learning gate approve <id>
+python -m github_learning solidify
 ```
 
 ## Configuration
