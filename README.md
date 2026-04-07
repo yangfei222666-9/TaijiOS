@@ -1,7 +1,8 @@
 # TaijiOS 太极OS
 
 <p align="center">
-  <strong>AI Operating System — 自进化、自愈、自学习的智能体操作系统框架</strong>
+  <strong>An evidence-driven AI operating system.</strong><br>
+  <strong>以证据和门禁驱动的 AI 操作系统。</strong>
 </p>
 
 <p align="center">
@@ -19,6 +20,21 @@ TaijiOS is a framework for building AI systems that improve themselves through e
 太极OS 是一个让 AI 系统通过经验自我进化的框架。它提供事件驱动编排、统一 LLM 路由、自愈流水线，以及从外部 GitHub 项目吸收知识的学习管道。
 
 > 核心理念：吸收别人的经验，消化别人的坑，沉淀成自己的机制。
+
+## Status 项目状态
+
+**Verified 已验证:**
+- Core event engine, scheduler, reactor, circuit breaker
+- LLM Gateway: auth, policy, failover (12/12 extreme scenarios passed), audit
+- Self-healing pipeline: 20/20 jobs auto-healed (score 0.37→0.95)
+- GitHub learning pipeline: discover→analyze→digest→gate→solidify (small sample)
+- Experience retrieval and injection into planner
+
+**In Progress 进行中:**
+- Webhook delivery confirmation chain (retry + DLQ)
+- Experience flywheel at larger scale
+- Self-healing in production main loop
+- Quickstart that works without Ollama
 
 ## Architecture 架构
 
