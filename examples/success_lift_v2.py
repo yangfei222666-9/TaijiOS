@@ -235,6 +235,16 @@ def main():
             "baseline_version": 4,
             "failure_types": list({j["reason_code"] for j in jobs}),
         },
+        "sample_window": {
+            "n_per_group": N,
+            "time": now,
+            "seed": SEED,
+            "max_retries": MAX_RETRIES,
+            "ab_switch": "use_retrieval flag: A=False, B=True (same job set, same RNG seed)",
+            "retrieval_source": "coherent_engine/pipeline/experience_index.json",
+            "active_experiences": len(active),
+            "total_experiences": len(idx),
+        },
         "group_a": {k: v for k, v in group_a.items() if k != "results"},
         "group_b": {k: v for k, v in group_b.items() if k != "results"},
         "lift": {
@@ -245,13 +255,19 @@ def main():
         "evidence_paths": {
             "experience_index": "coherent_engine/pipeline/experience_index.json",
             "test_script": "examples/success_lift_v2.py",
+            "run_trace": f"github_learning/data/success_lift_v2_latest.json",
         },
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    report_path = OUTPUT_DIR / "success_lift_latest.json"
-    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n  Evidence: {report_path}")
+    # v2 独立证据文件
+    v2_path = OUTPUT_DIR / "success_lift_v2_latest.json"
+    v2_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 同时写 latest（兼容 gate）
+    latest_path = OUTPUT_DIR / "success_lift_latest.json"
+    latest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n  Evidence: {v2_path}")
+    print(f"  Evidence: {latest_path}")
     print("=" * 60)
 
     return report

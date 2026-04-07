@@ -7,12 +7,12 @@
     "source_reason_code": "coherent.validator.character_consistency",
     "source_experience_id": "exp_auto_45b817906007",
     "stats": {
-      "success": 13,
+      "success": 15,
       "fail": 0,
-      "hit_count": 13,
-      "last_seen": "2026-04-07T12:21:57+00:00"
+      "hit_count": 15,
+      "last_seen": "2026-04-07T12:36:05+00:00"
     },
-    "confidence": 0.9931
+    "confidence": 0.9994
   },
   {
     "key": "brand.example.v1+char.xiaojiu.v1+coherent.validator.character_consistency",
@@ -146,14 +146,14 @@
     "key": "*+*+coherent.validator.style_consistency",
     "inject_to": "planner_system",
     "content": "历史经验：风格一致性失败时，固定 style token，降低生成随机性，相邻镜头亮度差控制在15%以内。",
-    "confidence": 0.9976,
+    "confidence": 1.0,
     "source_experience_id": "seed_002",
     "source_reason_code": "coherent.validator.style_consistency",
     "stats": {
-      "success": 6,
+      "success": 12,
       "fail": 0,
-      "hit_count": 6,
-      "last_seen": "2026-04-07T12:21:57+00:00"
+      "hit_count": 12,
+      "last_seen": "2026-04-07T12:36:05+00:00"
     },
     "created_at": 1775500000,
     "ttl_days": 0,
@@ -163,14 +163,14 @@
     "key": "*+*+coherent.validator.shot_continuity",
     "inject_to": "planner_system",
     "content": "历史经验：镜头连贯性失败时，增加衔接镜头，避免跳切，相邻镜头主体位置漂移控制在20%以内。",
-    "confidence": 0.9919,
+    "confidence": 1.0,
     "source_experience_id": "seed_003",
     "source_reason_code": "coherent.validator.shot_continuity",
     "stats": {
-      "success": 5,
+      "success": 10,
       "fail": 0,
-      "hit_count": 5,
-      "last_seen": "2026-04-07T12:21:57+00:00"
+      "hit_count": 10,
+      "last_seen": "2026-04-07T12:36:05+00:00"
     },
     "created_at": 1775500000,
     "ttl_days": 0,
@@ -180,14 +180,14 @@
     "key": "*+*+coherent.validator.subtitle_safety",
     "inject_to": "negative_prompt",
     "content": "字幕安全区被占用，在 negative_prompt 加入：foreground object in subtitle zone, text overlap.",
-    "confidence": 0.8518,
+    "confidence": 0.8546,
     "source_experience_id": "seed_004",
     "source_reason_code": "coherent.validator.subtitle_safety",
     "stats": {
-      "success": 6,
-      "fail": 1,
-      "hit_count": 7,
-      "last_seen": "2026-04-07T12:21:57+00:00"
+      "success": 12,
+      "fail": 2,
+      "hit_count": 14,
+      "last_seen": "2026-04-07T12:36:05+00:00"
     },
     "created_at": 1775500000,
     "ttl_days": 0,
