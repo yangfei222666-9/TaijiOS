@@ -1,0 +1,195 @@
+[
+  {
+    "matched_key": "coherent.validator.character_consistency",
+    "inject_to": "planner_system",
+    "content": "[AUTO][coherent.validator.character_consistency] 修复策略（来自 guidance）\n- 强制角色一致性：同一人物脸型/发型/服装/主色调跨镜头保持一致；禁止漂移。\n- 强制风格一致性：统一调色/光照/材质/构图风格；禁止跨镜头风格跳变。",
+    "source_reason_code": "coherent.validator.character_consistency",
+    "source_experience_id": "exp_auto_45b817906007",
+    "stats": {
+      "success": 11,
+      "fail": 0,
+      "last_seen": "2026-03-21T15:39:23+00:00"
+    },
+    "confidence": 0.9231
+  },
+  {
+    "matched_key": "brand.example.v1+char.xiaojiu.v1+coherent.validator.character_consistency",
+    "confidence": 0.85,
+    "inject_to": "planner_system",
+    "content": "强制角色主色调锁定：#FF6B35；禁止跨镜头色调漂移；角色脸部与发型保持一致。",
+    "source_experience_id": "exp_example_001",
+    "source_reason_code": "coherent.validator.character_consistency",
+    "stats": {
+      "success": 0,
+      "fail": 0,
+      "last_seen": ""
+    }
+  },
+  {
+    "key": "*+*+github_learning.lifecycle.61c647b4",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FareedKhan-dev/training-ai-agents: {'name': 'Multi-Phase Training Loop Design', 'description': 'Creating a loop where agents progress through different stages, from supervised fine-tuning to full reinforcement-based adaptation, ensuring they are continuously learning and improving.', 'importance': 'High', 'mapped_to': 'Training Lifec",
+    "confidence": 0.789,
+    "source_experience_id": "github_61c647b41f3fcf3e",
+    "source_reason_code": "github_learning.lifecycle",
+    "stats": {
+      "success": 3,
+      "fail": 1,
+      "hit_count": 4,
+      "last_seen": "2026-04-07T04:50:32+00:00"
+    }
+  },
+  {
+    "key": "*+*+github_learning.lifecycle.fd3db739",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From chrisworsey55/atlas-gic: {'name': 'Rollback Mechanism', 'description': 'Allows reverting changes to the system in case of errors or regressions, ensuring stability during development and deployment phases.', 'importance': 'High', 'module_mapping': 'Recovery'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_fd3db7398739a83e",
+    "source_reason_code": "github_learning.lifecycle",
+    "quarantined": false
+  },
+  {
+    "key": "*+*+github_learning.architecture.2011e671",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From obra/superpowers: {'name': 'Skill Management', 'description': \"Managing a set of composable 'skills' and their interactions, which is a key mechanism for enabling the system's functionality. It allows for modularity and reusability of different components.\", 'importance': 'High', 'mapped_to_module': 'Control'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_2011e67181ef9f23",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.2d8b2d39",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From codefuse-ai/codefuse-chatbot: {'what_it_does': '实现仓库级代码理解与项目文件级代码生成', 'why_matters': '提升开发效率', 'maps_to_taijios_module': 'Development Environment'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_2d8b2d39a676ea81",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.38fcffd5",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FoundationAgents/MetaGPT: {'what_it_does': \"Developing a clear separation of concerns among agents to prevent tight coupling between them and ensure each agent's functionality remains isolated and manageable.\", 'why_matters': 'Promotes modularity and maintainability, making it easier for developers to understand and modify i",
+    "confidence": 0.6,
+    "source_experience_id": "github_38fcffd5f8c833d9",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.3a465edf",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From AutoLab-SAI-SJTU/Paper2Rebuttal: {'name': 'Code Release', 'description': 'Automating various steps such as paper parsing, issue extraction, literature search, strategy generation, and rebuttal writing.', 'importance': 'High', 'mapped_to': 'Control Plane'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_3a465edf814b535b",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.observability.45af8f2c",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From obra/superpowers: {'name': 'Observability Mechanism', 'description': 'Providing mechanisms for monitoring the workflow execution to ensure observability. This is crucial for debugging and troubleshooting issues that may arise.', 'importance': 'Medium-High', 'mapped_to_module': 'Monitoring'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_45af8f2c6a616527",
+    "source_reason_code": "github_learning.observability"
+  },
+  {
+    "key": "*+*+github_learning.architecture.474363ac",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FareedKhan-dev/training-ai-agents: {'name': 'Dynamic Reward System Implementation', 'description': 'Designing a reward system that allows agents to receive feedback based on their performance, alignment, and contribution to the overall task, ensuring they learn effectively and adaptively.', 'importance': 'High', 'mapped_to': 'Reward ",
+    "confidence": 0.6,
+    "source_experience_id": "github_474363acba9e5e2e",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.53f63493",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From AutoLab-SAI-SJTU/Paper2Rebuttal: {'name': 'Datasets', 'description': 'Collecting and managing relevant datasets for literature search.', 'importance': 'High', 'mapped_to': 'Data Plane'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_53f63493cec14d7f",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.5b023cb3",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From codefuse-ai/codefuse-chatbot: {'what_it_does': '构建一个完善的调度核心，支持多模式一键配置', 'why_matters': '简化操作流程和提高效率', 'maps_to_taijios_module': 'Control and Configuration Management'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_5b023cb39b09e122",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.architecture.67d936fc",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FoundationAgents/MetaGPT: {'what_it_does': 'Integrating a collaborative development platform where multiple contributors can work on different aspects of the project simultaneously, reducing the single-author bottleneck issue.', 'why_matters': 'Encourages community participation and accelerates development by allowing distri",
+    "confidence": 0.6,
+    "source_experience_id": "github_67d936fcae27ee65",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.observability.693cde3f",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From AutoLab-SAI-SJTU/Paper2Rebuttal: {'name': 'Paper Release', 'description': 'Publishing the research findings in a peer-reviewed journal (arXiv).', 'importance': 'Medium', 'mapped_to': 'Observation Plane'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_693cde3fa4158f0f",
+    "source_reason_code": "github_learning.observability"
+  },
+  {
+    "key": "*+*+github_learning.observability.73d6e172",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FoundationAgents/MetaGPT: {'what_it_does': \"Implementing a robust logging system for all agents' interactions, allowing developers to monitor the flow of information between agents.\", 'why_matters': 'Ensures that developers have visibility into how different agents are interacting, which is crucial for debugging and troubles",
+    "confidence": 0.6,
+    "source_experience_id": "github_73d6e172b0ebf53e",
+    "source_reason_code": "github_learning.observability"
+  },
+  {
+    "key": "*+*+github_learning.architecture.7fe15588",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From obra/superpowers: {'name': 'Agent-Driven Development', 'description': \"Having agents work through each engineering task, inspecting and reviewing their work, which is a key mechanism for ensuring the implementation plan's clarity. It also emphasizes true red/green TDD, YAGNI, and DRY.\", 'importance': 'High', 'mapped_",
+    "confidence": 0.6,
+    "source_experience_id": "github_7fe1558857389f3b",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.lifecycle.875a4a06",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From camel-ai/camel: {'name': 'Rollback Mechanism', 'description': 'Introducing a rollback feature to revert changes in the system when necessary, ensuring data integrity and consistency.', 'importance': 'High', 'mapped_to_module': 'System Recovery Module'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_875a4a06d89964c5",
+    "source_reason_code": "github_learning.lifecycle"
+  },
+  {
+    "key": "*+*+github_learning.observability.8aa53f61",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FareedKhan-dev/training-ai-agents: {'name': 'Observability Integration', 'description': 'Capturing every interaction and learning step in real time through tracing hooks and logging adapters, allowing for better debugging and understanding of agent behavior.', 'importance': 'High', 'mapped_to': 'Performance Monitoring'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_8aa53f6122335276",
+    "source_reason_code": "github_learning.observability"
+  },
+  {
+    "key": "*+*+github_learning.architecture.96e3ed8f",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From FoundationAgents/MetaGPT: {'what_it_does': 'Designing a comprehensive rollback mechanism to revert the state of the system in case of errors or failures during multi-agent coordination.', 'why_matters': 'Prevents cascading failures and ensures that the system can recover from unexpected events without losing control, maintai",
+    "confidence": 0.6,
+    "source_experience_id": "github_96e3ed8f5967b0a3",
+    "source_reason_code": "github_learning.architecture"
+  },
+  {
+    "key": "*+*+github_learning.lifecycle.9e33c986",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From camel-ai/camel: {'name': 'Observability Enhancements', 'description': 'Implementing features to observe the state and behavior of components within the system, such as logging, metrics, and tracing.', 'importance': 'Medium-High', 'mapped_to_module': 'Monitoring System'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_9e33c986ac2b9bcc",
+    "source_reason_code": "github_learning.lifecycle"
+  },
+  {
+    "key": "*+*+github_learning.observability.b4d24b46",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From chrisworsey55/atlas-gic: {'name': 'Observability', 'description': 'Enables real-time monitoring and logging of agent performance, allowing for quick identification and resolution of issues.', 'importance': 'High', 'module_mapping': 'Telemetry'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_b4d24b4651d10fcd",
+    "source_reason_code": "github_learning.observability"
+  },
+  {
+    "key": "*+*+github_learning.architecture.dd8750a8",
+    "inject_to": "planner_system",
+    "content": "[GitHub Learning] From camel-ai/camel: {'name': 'Component Management', 'description': 'Managing a diverse set of components such as agents, tasks, prompts, models, and environments in a modular way.', 'importance': 'High', 'mapped_to_module': 'Resource Manager'}",
+    "confidence": 0.6,
+    "source_experience_id": "github_dd8750a88366f648",
+    "source_reason_code": "github_learning.architecture"
+  }
+]
