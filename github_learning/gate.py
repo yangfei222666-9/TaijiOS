@@ -225,3 +225,160 @@ def print_quality():
                 print(f"  Rollback candidate: {rc.get('experience_id', '?')} (conf={rc.get('confidence', '?')}, hits={rc.get('hit_count', '?')})")
     print(f"  Evidence: {GATE_QUALITY_LATEST}")
     print()
+
+
+# ── Worker Gate ───────────────────────────────────────────────
+
+WORKER_STATUS = Path(__file__).resolve().parents[1] / "worker" / "worker_data" / "worker_status.json"
+WORKER_CYCLES = Path(__file__).resolve().parents[1] / "worker" / "worker_data" / "worker_cycles.jsonl"
+GATE_WORKER_LATEST = DATA_DIR / "gate_worker_latest.json"
+
+
+def _load_worker_status() -> Optional[Dict[str, Any]]:
+    if not WORKER_STATUS.exists():
+        return None
+    try:
+        return json.loads(WORKER_STATUS.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _load_recent_cycles(window_hours: int = 24) -> List[Dict[str, Any]]:
+    """Load cycles from worker_cycles.jsonl within the time window."""
+    if not WORKER_CYCLES.exists():
+        return []
+    cutoff = datetime.now(timezone.utc).timestamp() - window_hours * 3600
+    cycles = []
+    try:
+        for line in WORKER_CYCLES.read_text(encoding="utf-8").strip().splitlines():
+            if not line.strip():
+                continue
+            entry = json.loads(line)
+            ts_str = entry.get("ts", "")
+            if ts_str:
+                try:
+                    dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    if dt.timestamp() >= cutoff:
+                        cycles.append(entry)
+                except (ValueError, TypeError):
+                    cycles.append(entry)
+    except (OSError, json.JSONDecodeError):
+        pass
+    return cycles
+
+
+def worker_check(window_hours: int = 24) -> Dict[str, Any]:
+    """
+    Run worker gate check. Verdict: PASS / WARN / FAIL.
+    Checks: status file exists, recent cycles, no persistent errors, evidence paths.
+    """
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    status = _load_worker_status()
+
+    # FAIL: status file missing or unparseable
+    if status is None:
+        result = {
+            "verdict": "FAIL",
+            "reason": "worker_status.json not found or unparseable",
+            "summary": "worker: MISSING",
+            "checked_at": now_str,
+            "window_hours": window_hours,
+            "status": None,
+            "recent_cycles": 0,
+        }
+        _save_gate_worker(result)
+        return result
+
+    cycles = _load_recent_cycles(window_hours)
+    last_error = status.get("last_error", "")
+    current_mode = status.get("current_mode", "unknown")
+    cycles_completed = status.get("cycles_completed", 0)
+    last_cycle_at = status.get("last_cycle_at", "")
+
+    # Check how long since last cycle
+    hours_since_cycle = None
+    if last_cycle_at:
+        try:
+            dt = datetime.fromisoformat(last_cycle_at.replace("Z", "+00:00"))
+            hours_since_cycle = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+        except (ValueError, TypeError):
+            pass
+
+    # Evidence paths check
+    evidence_ok = WORKER_STATUS.exists() and WORKER_CYCLES.exists()
+
+    # Build warnings
+    warnings = []
+    fail_reasons = []
+
+    if cycles_completed == 0 and not cycles:
+        fail_reasons.append("no cycles ever completed")
+    elif not cycles and hours_since_cycle and hours_since_cycle > window_hours:
+        fail_reasons.append(f"no cycles in last {window_hours}h (last: {hours_since_cycle:.1f}h ago)")
+
+    if last_error:
+        warnings.append(f"last_error: {last_error[:100]}")
+
+    if current_mode == "stopped":
+        warnings.append("worker is stopped")
+
+    if not evidence_ok:
+        warnings.append("worker_cycles.jsonl missing")
+
+    # Sparse cycles warning
+    if cycles and len(cycles) < 2 and window_hours >= 24:
+        warnings.append(f"only {len(cycles)} cycle(s) in {window_hours}h window")
+
+    # Determine verdict
+    if fail_reasons:
+        verdict = "FAIL"
+        reason = "; ".join(fail_reasons)
+    elif warnings:
+        verdict = "WARN"
+        reason = "; ".join(warnings)
+    else:
+        verdict = "PASS"
+        reason = "all clear"
+
+    summary = (f"worker: cycles={cycles_completed} recent={len(cycles)}/{window_hours}h "
+               f"mode={current_mode} error={'yes' if last_error else 'no'}")
+
+    result = {
+        "verdict": verdict,
+        "reason": reason,
+        "summary": summary,
+        "checked_at": now_str,
+        "window_hours": window_hours,
+        "cycles_completed": cycles_completed,
+        "recent_cycles": len(cycles),
+        "current_mode": current_mode,
+        "last_cycle_at": last_cycle_at,
+        "last_error": last_error[:200] if last_error else "",
+        "evidence_paths": {
+            "worker_status": str(WORKER_STATUS),
+            "worker_cycles": str(WORKER_CYCLES),
+        },
+        "status": status,
+    }
+    _save_gate_worker(result)
+    return result
+
+
+def _save_gate_worker(result: Dict[str, Any]):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    GATE_WORKER_LATEST.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def print_worker(window_hours: int = 24):
+    """Print worker gate check result."""
+    result = worker_check(window_hours=window_hours)
+    v = result["verdict"]
+    print(f"\n[{v}] {result['summary']}")
+    if result["reason"] != "all clear":
+        print(f"  Reason: {result['reason']}")
+    if result.get("last_cycle_at"):
+        print(f"  Last cycle: {result['last_cycle_at']}")
+    print(f"  Evidence: {GATE_WORKER_LATEST}")
+    print()
