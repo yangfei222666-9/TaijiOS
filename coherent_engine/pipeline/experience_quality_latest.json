@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-07T07:41:57Z",
+  "generated_at": "2026-04-07T08:39:09Z",
   "total": 22,
   "active": 22,
   "quarantined": 0,
@@ -22,5 +22,5 @@
     "auto_quarantine_30pct"
   ],
   "sample_window": "",
-  "latest_cycle_id": "gate-test-1"
+  "latest_cycle_id": "worker-cycle-3"
 }

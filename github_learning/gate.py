@@ -346,7 +346,7 @@ def worker_check(window_hours: int = 2) -> Dict[str, Any]:
     else:
         verdict = "PASS"
         reason = "all clear"
-        next_action = "none — worker healthy"
+        next_action = "none - worker healthy"
 
     summary = (f"worker: cycles={cycles_completed} recent={len(cycles)}/{window_hours}h "
                f"mode={current_mode} error={'yes' if last_error else 'no'}")
