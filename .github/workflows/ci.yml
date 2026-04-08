@@ -35,8 +35,25 @@ jobs:
         run: pip install requests httpx numpy fastapi uvicorn
       - name: Check core imports
         run: |
-          python -c "from aios.core.event_bus import EventBus; print('OK: event_bus')" || true
-          python -c "from aios.core.circuit_breaker import CircuitBreaker; print('OK: circuit_breaker')" || true
-          python -c "from aios.gateway.errors import GatewayError; print('OK: gateway.errors')" || true
-          python -c "from github_learning.discoverer import discover; print('OK: discoverer')" || true
-          python -c "from github_learning.gate import list_pending; print('OK: gate')" || true
+          python -c "from aios.core.event_bus import EventBus; print('OK: event_bus')"
+          python -c "from aios.core.circuit_breaker import CircuitBreaker; print('OK: circuit_breaker')"
+          python -c "from aios.gateway.errors import GatewayError; print('OK: gateway.errors')"
+          python -c "from github_learning.discoverer import discover; print('OK: discoverer')"
+          python -c "from github_learning.gate import list_pending; print('OK: gate')"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-cov numpy opencv-python-headless edge-tts redis
+          pip install -e . 2>/dev/null || true
+      - name: Run tests
+        run: python -m pytest coherent_engine/tests/ -q --tb=short
+      - name: Coverage check
+        run: |
+          python -m pytest coherent_engine/tests/ -q --cov=coherent_engine --cov-report=term-missing --cov-fail-under=65
