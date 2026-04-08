@@ -258,7 +258,8 @@ def _form_completeness(form: dict) -> float:
 
 
 def _find_match_context(home: str, away: str) -> Optional[dict]:
-    """从赛程列表匹配比赛的赛制信息。"""
+    """从赛程列表匹配比赛的赛制信息，或从已知赛事表查找。"""
+    # 先查赛程 API
     matches = get_upcoming_matches()
     for m in matches:
         m_home = _normalize_team(m.get("home", "") or m.get("home_team", ""))
@@ -270,7 +271,46 @@ def _find_match_context(home: str, away: str) -> Optional[dict]:
                 "date": m.get("date", "") or (m.get("kickoff_utc", "") or "")[:10],
                 "stage": "小组赛",
             }
-    return None
+    # 再查静态赛事表
+    key = frozenset([home, away])
+    return _KNOWN_FIXTURES.get(key)
+
+
+# ── 已知赛事表（手动维护热门比赛的赛制信息）─────────────────────
+_KNOWN_FIXTURES: dict = {}
+
+def _fs(*teams): return frozenset(teams)
+
+# 2026-04-08/09 欧冠四分之一决赛首回合
+_KNOWN_FIXTURES[_fs("巴黎圣日耳曼", "利物浦")] = {
+    "competition": "欧洲冠军联赛", "stage": "四分之一决赛首回合",
+    "home_away": "巴黎圣日耳曼主场", "date": "2026-04-09",
+    "two_leg": True, "knockout": True,
+    "notes": "淘汰赛两回合制，客场进球不再有额外权重，总比分相同则加时+点球",
+}
+_KNOWN_FIXTURES[_fs("巴塞罗那", "马德里竞技")] = {
+    "competition": "欧洲冠军联赛", "stage": "四分之一决赛首回合",
+    "home_away": "巴塞罗那主场", "date": "2026-04-09",
+    "two_leg": True, "knockout": True,
+    "notes": "西甲德比，两队本赛季联赛已交手两次",
+}
+# 欧联
+_KNOWN_FIXTURES[_fs("布拉加", "皇家贝蒂斯")] = {
+    "competition": "欧足联欧洲联赛", "stage": "四分之一决赛首回合",
+    "home_away": "布拉加主场", "date": "2026-04-09",
+    "two_leg": True, "knockout": True,
+}
+# 沙特联
+_KNOWN_FIXTURES[_fs("希拉尔", "希洛德")] = {
+    "competition": "沙特职业联赛", "stage": "第29轮",
+    "home_away": "希拉尔主场", "date": "2026-04-09",
+    "two_leg": False, "knockout": False,
+}
+_KNOWN_FIXTURES[_fs("费哈", "阿尔阿赫利")] = {
+    "competition": "沙特职业联赛", "stage": "第29轮",
+    "home_away": "费哈主场", "date": "2026-04-08",
+    "two_leg": False, "knockout": False,
+}
 
 
 def build_data_card(home: str, away: str) -> dict:
@@ -326,7 +366,27 @@ def _card_to_text(card: dict) -> str:
 
     if card["match_context"]:
         mc = card["match_context"]
-        ctx += f"\n赛制: {mc.get('stage', '')} {mc.get('group', '')}组 | {mc.get('stadium', '')} | {mc.get('date', '')}"
+        comp = mc.get("competition", "")
+        stage = mc.get("stage", "")
+        ha = mc.get("home_away", "")
+        date = mc.get("date", "")
+        group = mc.get("group", "")
+        stadium = mc.get("stadium", "")
+        two_leg = "两回合制" if mc.get("two_leg") else "单场定胜负"
+        knockout = "淘汰赛" if mc.get("knockout") else "联赛/小组赛"
+        notes = mc.get("notes", "")
+        ctx += f"\n\n赛事: {comp} {stage}"
+        if group:
+            ctx += f" {group}组"
+        if ha:
+            ctx += f" | {ha}"
+        if stadium:
+            ctx += f" | {stadium}"
+        if date:
+            ctx += f" | {date}"
+        ctx += f"\n赛制: {knockout}，{two_leg}"
+        if notes:
+            ctx += f"\n备注: {notes}"
 
     ctx += f"""
 
