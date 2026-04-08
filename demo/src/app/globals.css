@@ -144,6 +144,11 @@ html,body{height:100%;font-family:var(--font-sans);background:var(--bg);color:va
   background:rgba(34,211,238,0.08);border:1px solid var(--border);color:var(--text-dim);
 }
 
+/* Data card */
+.card-checks{margin-top:8px}
+.card-missing{margin-top:6px}
+.card-divider{border-top:1px solid var(--border);margin:16px 0}
+
 /* Engine capability bar */
 .engine-bar{
   margin-top:32px;padding:16px 20px;

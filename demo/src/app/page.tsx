@@ -22,6 +22,7 @@ function evtLabel(type: string): string {
     "task.delivered": "预测交付",
     "task.done": "预测结束",
     "task.dlq": "任务进入死信队列",
+    "task.degraded": "数据不足，降级响应",
   };
   return map[type] || type;
 }
@@ -196,13 +197,47 @@ export default function Home() {
 
       {evidence && (
         <div className="panel">
+          {evidence.data_card && (
+            <>
+              <div className="panel-label panel-label-lg">资料卡</div>
+              <div className="ev-grid">
+                <div>完整度: <span className={
+                  evidence.data_card.completeness_score >= 0.45 ? "c-green" : "c-red"
+                }>{(evidence.data_card.completeness_score * 100).toFixed(0)}%</span></div>
+                {evidence.data_card.match_context && (
+                  <div>赛制: {evidence.data_card.match_context.stage} {evidence.data_card.match_context.group}组</div>
+                )}
+              </div>
+              <div className="checks-grid card-checks">
+                {Object.entries(evidence.data_card.section_scores).map(([name, score]) => (
+                  <div key={name} className="check-row">
+                    <span className={score >= 0.5 ? "c-green" : "c-red"}>{score >= 0.5 ? "+" : "x"}</span>
+                    <span className="check-name">{{
+                      home_profile: "主队档案", away_profile: "客队档案", match_context: "赛事信息",
+                      recent_form: "近期战绩", head_to_head: "历史交锋", key_absences: "伤停信息",
+                    }[name] || name}</span>
+                    <span className="c-yellow">{score.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              {evidence.data_card.missing.length > 0 && (
+                <div className="fix-row card-missing">缺失: {evidence.data_card.missing.join("、")}</div>
+              )}
+              <div className="card-divider" />
+            </>
+          )}
+
           <div className="panel-label panel-label-lg">验证摘要</div>
           {evidence.evidence.validator && (
             <div className="validator-tag">验证器: coherent_engine — TaijiOS 预测质量验证引擎</div>
           )}
           <div className="ev-grid">
-            <div>状态: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
-              {evidence.evidence.succeeded ? "通过" : "失败"}
+            <div>状态: <span className={
+              evidence.evidence.succeeded ? "c-green" :
+              evidence.evidence.reason_code === "DATA_INSUFFICIENT" ? "c-yellow" : "c-red"
+            }>
+              {evidence.evidence.succeeded ? "通过" :
+               evidence.evidence.reason_code === "DATA_INSUFFICIENT" ? "信息不足" : "失败"}
             </span></div>
             <div>评分: <span className="c-yellow">{evidence.evidence.final_score}</span></div>
             <div>尝试次数: {evidence.evidence.attempts}</div>

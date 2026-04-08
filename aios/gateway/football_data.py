@@ -153,24 +153,7 @@ def _fallback_matches() -> List[dict]:
     return sample_matches
 
 
-def get_team_profile(team_name: str) -> dict:
-    """获取球队档案（优先 API，fallback 到静态数据）。"""
-    # 先尝试 API
-    api_data = get_team_stats(team_name) if FOOTBALL_DATA_API_KEY else None
-    if api_data:
-        return {
-            "name": api_data.get("name", team_name),
-            "fifa_rank": api_data.get("fifaRank", "未知"),
-            "style": "数据来源: football-data.org",
-            "stars": ", ".join([p.get("name", "") for p in api_data.get("squad", [])[:3]]) or "未知",
-            "recent": f"成立于 {api_data.get('founded', '未知')}",
-        }
-    # Fallback 到静态数据
-    profile = _TEAM_PROFILES.get(team_name, {})
-    if profile:
-        return {"name": team_name, **profile}
-    return {"name": team_name, "fifa_rank": "未知", "style": "未知", "stars": "未知", "recent": "未知"}
-
+# ── 队名标准化 ────────────────────────────────────────────────────
 
 _EN_TO_CN = {
     "mexico": "墨西哥", "south africa": "南非", "korea republic": "韩国",
@@ -195,7 +178,6 @@ _EN_TO_CN = {
 def _normalize_team(name: str) -> str:
     """将英文队名转为中文，已是中文则原样返回。"""
     cleaned = name.strip()
-    # 去掉常见前缀后缀
     for prefix in ("预测", "分析"):
         if cleaned.startswith(prefix):
             cleaned = cleaned[len(prefix):].strip()
@@ -205,25 +187,150 @@ def _normalize_team(name: str) -> str:
     return _EN_TO_CN.get(cleaned.lower(), cleaned)
 
 
-def build_prediction_context(home: str, away: str) -> str:
-    """构建预测所需的完整数据上下文。"""
+def get_team_profile(team_name: str) -> dict:
+    """获取球队档案（优先 API，fallback 到静态数据）。"""
+    # 先尝试 API
+    api_data = get_team_stats(team_name) if FOOTBALL_DATA_API_KEY else None
+    if api_data:
+        return {
+            "name": api_data.get("name", team_name),
+            "fifa_rank": api_data.get("fifaRank", "未知"),
+            "style": "数据来源: football-data.org",
+            "stars": ", ".join([p.get("name", "") for p in api_data.get("squad", [])[:3]]) or "未知",
+            "recent": f"成立于 {api_data.get('founded', '未知')}",
+        }
+    # Fallback 到静态数据
+    profile = _TEAM_PROFILES.get(team_name, {})
+    if profile:
+        return {"name": team_name, **profile}
+    return {"name": team_name, "fifa_rank": "未知", "style": "未知", "stars": "未知", "recent": "未知"}
+
+
+# ── 资料卡完整度 ──────────────────────────────────────────────────
+
+_CARD_WEIGHTS = {
+    "home_profile": 0.20,
+    "away_profile": 0.20,
+    "match_context": 0.15,
+    "recent_form": 0.15,
+    "head_to_head": 0.15,
+    "key_absences": 0.15,
+}
+
+COMPLETENESS_THRESHOLD = 0.45
+
+
+def _profile_completeness(profile: dict) -> float:
+    """球队档案完整度 0-1。"""
+    fields = ["fifa_rank", "style", "stars", "recent"]
+    known = sum(1 for f in fields if profile.get(f) and profile.get(f) != "未知")
+    return known / len(fields)
+
+
+def _form_completeness(form: dict) -> float:
+    """近期战绩完整度 0-1。"""
+    scores = []
+    for side in ("home", "away"):
+        val = form.get(side, "未知")
+        scores.append(0.0 if val == "未知" else 1.0)
+    return sum(scores) / len(scores)
+
+
+def _find_match_context(home: str, away: str) -> Optional[dict]:
+    """从赛程列表匹配比赛的赛制信息。"""
+    matches = get_upcoming_matches()
+    for m in matches:
+        m_home = _normalize_team(m.get("home", "") or m.get("home_team", ""))
+        m_away = _normalize_team(m.get("away", "") or m.get("away_team", ""))
+        if (m_home == home and m_away == away) or (m_home == away and m_away == home):
+            return {
+                "group": m.get("group", "") or m.get("group_name", ""),
+                "stadium": m.get("stadium", ""),
+                "date": m.get("date", "") or (m.get("kickoff_utc", "") or "")[:10],
+                "stage": "小组赛",
+            }
+    return None
+
+
+def build_data_card(home: str, away: str) -> dict:
+    """构建结构化资料卡，包含完整度评分。"""
     home = _normalize_team(home)
     away = _normalize_team(away)
+
     home_profile = get_team_profile(home)
     away_profile = get_team_profile(away)
+    match_context = _find_match_context(home, away)
+    h2h = get_head_to_head(home, away)
 
-    ctx = f"""比赛: {home} vs {away}
+    card = {
+        "home": home,
+        "away": away,
+        "home_profile": home_profile,
+        "away_profile": away_profile,
+        "match_context": match_context,
+        "recent_form": {
+            "home": home_profile.get("recent", "未知"),
+            "away": away_profile.get("recent", "未知"),
+        },
+        "head_to_head": h2h,
+        "key_absences": None,
+    }
 
-{home} 档案:
-- FIFA排名: {home_profile.get('fifa_rank', '未知')}
-- 风格: {home_profile.get('style', '未知')}
-- 核心球员: {home_profile.get('stars', '未知')}
-- 近期表现: {home_profile.get('recent', '未知')}
+    section_scores = {
+        "home_profile": _profile_completeness(home_profile),
+        "away_profile": _profile_completeness(away_profile),
+        "match_context": 1.0 if match_context else 0.0,
+        "recent_form": _form_completeness(card["recent_form"]),
+        "head_to_head": 1.0 if h2h else 0.0,
+        "key_absences": 0.0,
+    }
 
-{away} 档案:
-- FIFA排名: {away_profile.get('fifa_rank', '未知')}
-- 风格: {away_profile.get('style', '未知')}
-- 核心球员: {away_profile.get('stars', '未知')}
-- 近期表现: {away_profile.get('recent', '未知')}"""
+    completeness_score = sum(
+        section_scores[k] * _CARD_WEIGHTS[k] for k in _CARD_WEIGHTS
+    )
+    missing = [k for k, v in section_scores.items() if v < 0.5]
+
+    card["section_scores"] = section_scores
+    card["completeness_score"] = round(completeness_score, 4)
+    card["missing"] = missing
+    return card
+
+
+def _card_to_text(card: dict) -> str:
+    """将资料卡转为 LLM prompt 用的纯文本。"""
+    hp = card["home_profile"]
+    ap = card["away_profile"]
+    ctx = f"""比赛: {card['home']} vs {card['away']}
+完整度: {card['completeness_score']:.0%}"""
+
+    if card["match_context"]:
+        mc = card["match_context"]
+        ctx += f"\n赛制: {mc.get('stage', '')} {mc.get('group', '')}组 | {mc.get('stadium', '')} | {mc.get('date', '')}"
+
+    ctx += f"""
+
+{card['home']} 档案:
+- FIFA排名: {hp.get('fifa_rank', '未知')}
+- 风格: {hp.get('style', '未知')}
+- 核心球员: {hp.get('stars', '未知')}
+- 近期表现: {hp.get('recent', '未知')}
+
+{card['away']} 档案:
+- FIFA排名: {ap.get('fifa_rank', '未知')}
+- 风格: {ap.get('style', '未知')}
+- 核心球员: {ap.get('stars', '未知')}
+- 近期表现: {ap.get('recent', '未知')}"""
+
+    if card.get("head_to_head"):
+        ctx += f"\n\n历史交锋: {card['head_to_head']}"
+
+    if card.get("missing"):
+        ctx += f"\n\n缺失数据: {', '.join(card['missing'])}"
 
     return ctx
+
+
+def build_prediction_context(home: str, away: str) -> str:
+    """向后兼容：返回纯文本上下文。"""
+    card = build_data_card(home, away)
+    return _card_to_text(card)

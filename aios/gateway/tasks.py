@@ -155,6 +155,7 @@ class TaskRecord:
     fix_suggestions: list = field(default_factory=list)
     validator_name: str = ""
     hexagram: dict | None = None
+    data_card: dict | None = None
 
 
 # ── In-memory store ──────────────────────────────────────────────
@@ -445,12 +446,71 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
 
 
 def _run_pipeline(record: TaskRecord, bus: EventBus):
-    """Core loop: generate → validate → guidance → retry → deliver."""
+    """Core loop: data_card → generate → validate → guidance → retry → deliver."""
     trace = RunTrace(task_id=record.task_id, started_at=time.time())
     record.status = "running"
     record.phase = "running"
     record.updated_at = _utc_now()
     bus.publish("task.started", {"task_id": record.task_id})
+
+    # ── Step 0: 构建资料卡，检查完整度 ──
+    from .football_data import build_data_card, COMPLETENESS_THRESHOLD, _card_to_text
+
+    parts = record.message.split(" vs ")
+    home_raw = parts[0].strip() if len(parts) >= 2 else record.message
+    away_raw = parts[1].strip() if len(parts) >= 2 else ""
+    for prefix in ("预测", "分析"):
+        if home_raw.startswith(prefix):
+            home_raw = home_raw[len(prefix):].strip()
+    for suffix in ("的比赛结果", "的比赛", "比赛结果", "比赛"):
+        if away_raw.endswith(suffix):
+            away_raw = away_raw[:-len(suffix)].strip()
+
+    data_card = build_data_card(home_raw, away_raw)
+    record.data_card = data_card
+
+    step_card = trace.add_step("data_card")
+    step_card.output = {
+        "completeness_score": data_card["completeness_score"],
+        "missing": data_card["missing"],
+    }
+    step_card.status = "completed"
+    step_card.ended_at = time.time()
+    bus.publish("step.completed", {
+        "step": "data_card",
+        "task_id": record.task_id,
+        "completeness": data_card["completeness_score"],
+    })
+
+    if data_card["completeness_score"] < COMPLETENESS_THRESHOLD:
+        record.phase = "degraded"
+        record.status = "degraded"
+        record.result_content = (
+            f"信息不足（完整度 {data_card['completeness_score']:.0%}，"
+            f"阈值 {COMPLETENESS_THRESHOLD:.0%}）。\n"
+            f"缺失: {', '.join(data_card['missing']) or '无'}\n"
+            f"建议等待更多数据后再预测。"
+        )
+        record.score = data_card["completeness_score"]
+        record.reason_code = "DATA_INSUFFICIENT"
+        trace.status = "degraded"
+        trace.ended_at = time.time()
+        record.trace = trace.to_dict()
+        record.events = bus.log
+        record.updated_at = _utc_now()
+        record.result = {
+            "task_id": record.task_id,
+            "status": "degraded",
+            "attempts": 0,
+            "final_score": record.score,
+            "self_healed": False,
+        }
+        bus.publish("task.degraded", {
+            "task_id": record.task_id,
+            "completeness": data_card["completeness_score"],
+            "missing": data_card["missing"],
+        })
+        return
 
     guidance = {}
     last_scores = None
@@ -614,7 +674,7 @@ async def task_stats():
     failed = sum(1 for r in records if r.status == "failed")
     healed = sum(1 for r in records if r.self_healed)
     avg_score = round(sum(r.score for r in records if r.score > 0) / max(1, succeeded + failed), 2)
-    done = [r for r in records if r.status in ("succeeded", "failed")]
+    done = [r for r in records if r.status in ("succeeded", "failed", "degraded")]
     last_completed = max((r.updated_at for r in done), default="") if done else ""
     return {
         "total": total,
@@ -697,7 +757,7 @@ async def stream_task(task_id: str):
                 }
                 yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
                 seen = len(events)
-            if record.status in ("succeeded", "failed"):
+            if record.status in ("succeeded", "failed", "degraded"):
                 final = {
                     "timestamp": time.time(),
                     "type": "task.done",
@@ -720,12 +780,13 @@ async def get_evidence(task_id: str):
         record = _store.get(task_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-    if record.status not in ("succeeded", "failed"):
+    if record.status not in ("succeeded", "failed", "degraded"):
         raise HTTPException(status_code=409, detail="Task still running")
     return {
         "task_id": record.task_id,
         "trace": record.trace,
         "result_content": record.result_content,
+        "data_card": record.data_card,
         "evidence": {
             "succeeded": 1 if record.status == "succeeded" else 0,
             "self_healed": record.self_healed,

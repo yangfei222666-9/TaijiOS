@@ -21,6 +21,7 @@ export interface TaskStatus {
 export interface TaskEvidence {
   task_id: string;
   result_content: string;
+  data_card: DataCard | null;
   trace: {
     task_id: string;
     status: string;
@@ -67,6 +68,20 @@ export interface TaskStats {
   last_completed: string;
   gateway: string;
   task_api: string;
+}
+
+export interface DataCard {
+  home: string;
+  away: string;
+  home_profile: Record<string, string | number>;
+  away_profile: Record<string, string | number>;
+  match_context: { group: string; stadium: string; date: string; stage: string } | null;
+  recent_form: { home: string; away: string };
+  head_to_head: Record<string, unknown> | null;
+  key_absences: Record<string, unknown> | null;
+  section_scores: Record<string, number>;
+  completeness_score: number;
+  missing: string[];
 }
 
 export interface Match {
