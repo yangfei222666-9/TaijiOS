@@ -49,6 +49,12 @@ class GatewayConfig:
     providers: List[ProviderConfig] = field(default_factory=list)
 
     def __post_init__(self):
+        extra = os.getenv("TAIJIOS_CORS_EXTRA", "")
+        if extra:
+            for origin in extra.split(","):
+                origin = origin.strip()
+                if origin and origin not in self.cors_origins:
+                    self.cors_origins.append(origin)
         if not self.providers:
             self.providers = _default_providers()
 

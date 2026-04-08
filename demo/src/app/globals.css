@@ -1,0 +1,71 @@
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--border:#262626;
+  --text:#e5e5e5;--text-dim:#737373;--accent:#3b82f6;
+  --green:#22c55e;--red:#ef4444;--yellow:#eab308;
+  --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+}
+html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:var(--text)}
+
+/* Layout */
+.page{max-width:720px;margin:0 auto;padding:40px 20px}
+.page h1{font-size:20px;margin-bottom:4px}
+.page-subtitle{color:var(--text-dim);font-size:13px;margin-bottom:32px}
+
+/* Input row */
+.input-row{display:flex;gap:8px;margin-bottom:24px}
+.input-row input{
+  flex:1;padding:10px 14px;font-size:14px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);outline:none;
+  font-family:var(--font-mono);
+}
+.input-row button{
+  padding:10px 20px;font-size:14px;font-weight:600;
+  background:var(--accent);color:#fff;border:none;
+  border-radius:6px;cursor:pointer;font-family:var(--font-mono);
+}
+.input-row button:disabled{opacity:0.5;cursor:default}
+
+/* Status bar */
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor}
+.status-dot.pulse{animation:pulse 1s infinite}
+.status-tid{color:var(--text-dim)}
+
+/* Error */
+.error-box{
+  padding:12px;margin-bottom:16px;font-size:13px;
+  background:#1a0000;border:1px solid var(--red);
+  border-radius:6px;color:var(--red);
+}
+
+/* Panel (shared for stream + evidence) */
+.panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:16px;font-size:12px;
+}
+.panel-label{
+  color:var(--text-dim);margin-bottom:8px;font-size:11px;
+  text-transform:uppercase;letter-spacing:1px;
+}
+.panel-label-lg{margin-bottom:12px}
+
+/* Stream */
+.stream-panel{margin-bottom:24px;max-height:320px;overflow-y:auto;line-height:1.8}
+.evt-row{display:flex;gap:10px}
+.evt-ts{color:var(--text-dim);flex-shrink:0}
+.evt-score{color:var(--yellow)}
+.c-green{color:var(--green)}
+.c-red{color:var(--red)}
+.c-yellow{color:var(--yellow)}
+.c-text{color:var(--text)}
+.c-dim{color:var(--text-dim)}
+.c-accent{color:var(--accent)}
+
+/* Evidence */
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
+.trace-step{display:flex;gap:10px;margin-bottom:2px}
+.trace-section{margin-top:16px}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}

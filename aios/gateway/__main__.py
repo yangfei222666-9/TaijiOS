@@ -12,7 +12,7 @@ import uvicorn
 
 def main():
     host = os.getenv("TAIJIOS_GATEWAY_HOST", "127.0.0.1")
-    port = int(os.getenv("TAIJIOS_GATEWAY_PORT", "9200"))
+    port = int(os.getenv("TAIJIOS_GATEWAY_PORT", os.getenv("PORT", "9200")))
     print(f"[gateway] Starting TaijiOS LLM Gateway on {host}:{port}")
     uvicorn.run("aios.gateway.app:app", host=host, port=port, log_level="info")
 
