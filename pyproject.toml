@@ -21,3 +21,12 @@ dependencies = [
 dev = [
     "pytest>=7.0",
 ]
+
+[tool.setuptools.packages.find]
+include = [
+    "aios*",
+    "coherent_engine*",
+    "worker*",
+    "self_improving_loop*",
+    "github_learning*",
+]
