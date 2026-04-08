@@ -213,6 +213,10 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
             return None
 
         raw = resp.choices[0].message.content.strip()
+        log.info(f"coherent_engine validate raw response: {raw[:200]}")
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
         scores_raw = json.loads(raw)
 
         # Build coherent_engine-format checks
