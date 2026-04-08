@@ -163,6 +163,7 @@ def _fallback_matches() -> List[dict]:
 # ── 队名标准化 ────────────────────────────────────────────────────
 
 _EN_TO_CN = {
+    # 国家队
     "mexico": "墨西哥", "south africa": "南非", "korea republic": "韩国",
     "czechia": "捷克", "canada": "加拿大", "bosnia-herzegovina": "波黑",
     "qatar": "卡塔尔", "switzerland": "瑞士", "usa": "美国",
@@ -179,6 +180,17 @@ _EN_TO_CN = {
     "peru": "秘鲁", "costa rica": "哥斯达黎加", "panama": "巴拿马",
     "honduras": "洪都拉斯", "jamaica": "牙买加", "turkey": "土耳其",
     "austria": "奥地利", "scotland": "苏格兰", "wales": "威尔士",
+    # 俱乐部
+    "psg": "巴黎圣日耳曼", "paris saint-germain": "巴黎圣日耳曼",
+    "liverpool": "利物浦", "barcelona": "巴塞罗那", "barca": "巴塞罗那",
+    "atletico madrid": "马德里竞技", "atletico": "马德里竞技",
+    "al hilal": "希拉尔", "al ahli": "阿尔阿赫利",
+    "real madrid": "皇家马德里", "manchester city": "曼城",
+    "man city": "曼城", "bayern munich": "拜仁慕尼黑", "bayern": "拜仁慕尼黑",
+    "inter milan": "国际米兰", "ac milan": "AC米兰", "juventus": "尤文图斯",
+    "arsenal": "阿森纳", "chelsea": "切尔西", "tottenham": "热刺",
+    "man united": "曼联", "manchester united": "曼联",
+    "real betis": "皇家贝蒂斯", "braga": "布拉加",
 }
 
 
