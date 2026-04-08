@@ -435,6 +435,26 @@ class TaskSubmitRequest(BaseModel):
     max_retries: int = Field(default=2, ge=1, le=5)
 
 
+# ── Rate limiter ────────────────────────────────────────────────
+
+_rate_window: list[float] = []  # timestamps of recent submissions
+_RATE_LIMIT = 5       # max tasks per window
+_RATE_WINDOW_S = 60   # window size in seconds
+
+
+def _check_rate_limit() -> bool:
+    """Return True if under limit, False if exceeded."""
+    now = time.time()
+    cutoff = now - _RATE_WINDOW_S
+    # Prune old entries
+    while _rate_window and _rate_window[0] < cutoff:
+        _rate_window.pop(0)
+    if len(_rate_window) >= _RATE_LIMIT:
+        return False
+    _rate_window.append(now)
+    return True
+
+
 # ── Routes ───────────────────────────────────────────────────────
 
 _boot_time = time.time()
@@ -468,6 +488,8 @@ async def task_stats():
 
 @router.post("/v1/tasks")
 async def submit_task(req: TaskSubmitRequest):
+    if not _check_rate_limit():
+        raise HTTPException(status_code=429, detail="Rate limit exceeded: max 5 tasks per minute")
     task_id = _gen_task_id()
     now = _utc_now()
     record = TaskRecord(
