@@ -132,6 +132,13 @@ export default function Home() {
               ))}
             </div>
           )}
+
+          {evidence.result_content && (
+            <div className="trace-section">
+              <div className="panel-label">Generated Content</div>
+              <pre className="gen-content">{evidence.result_content}</pre>
+            </div>
+          )}
         </div>
       )}
     </div>

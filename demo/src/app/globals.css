@@ -68,4 +68,12 @@ html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:va
 .trace-step{display:flex;gap:10px;margin-bottom:2px}
 .trace-section{margin-top:16px}
 
+/* Generated content */
+.gen-content{
+  margin-top:8px;padding:12px;font-size:12px;line-height:1.6;
+  background:var(--bg);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);white-space:pre-wrap;word-break:break-word;
+  max-height:300px;overflow-y:auto;font-family:var(--font-mono);
+}
+
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}

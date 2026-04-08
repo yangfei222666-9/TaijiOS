@@ -22,6 +22,10 @@ from pydantic import BaseModel, Field
 
 from .streaming import sse_response
 
+import logging
+
+log = logging.getLogger("gateway.tasks")
+
 router = APIRouter(tags=["tasks"])
 
 
@@ -41,6 +45,7 @@ class TaskRecord:
     created_at: str = ""
     updated_at: str = ""
     result: dict | None = None
+    result_content: str = ""
     events: list = field(default_factory=list)
     trace: dict | None = None
 
@@ -132,6 +137,46 @@ def _guidance_from_failures(failed_checks: list) -> dict:
     return guidance
 
 
+def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | None:
+    """Call real LLM via gateway provider infrastructure. Returns content or None on failure."""
+    try:
+        from .config import load_config
+        from .router import ProviderRouter
+        from .providers import create_provider
+        from .schemas import ChatCompletionRequest, ChatMessage
+
+        cfg = load_config()
+        router = ProviderRouter(cfg)
+        provider_cfg = router.select("deepseek-chat")
+        if provider_cfg is None:
+            return None
+
+        provider = create_provider(provider_cfg)
+
+        prompt = f"Task: {message}"
+        if guidance:
+            prompt += f"\nGuidance from previous attempt: {json.dumps(guidance)}"
+        if revision > 1:
+            prompt += f"\nThis is revision {revision}. Improve based on the guidance above."
+
+        req = ChatCompletionRequest(
+            model=provider_cfg.models[0] if provider_cfg.models else "deepseek-chat",
+            messages=[
+                ChatMessage(role="system", content="You are a helpful AI assistant. Respond concisely."),
+                ChatMessage(role="user", content=prompt),
+            ],
+            max_tokens=512,
+            temperature=0.7,
+        )
+        resp = provider.complete(req)
+        if resp.choices:
+            return resp.choices[0].message.content
+        return None
+    except Exception as e:
+        log.warning(f"LLM generate failed, falling back to simulation: {e}")
+        return None
+
+
 def _run_pipeline(record: TaskRecord, bus: EventBus):
     """Core loop: generate → validate → guidance → retry → deliver."""
     trace = RunTrace(task_id=record.task_id, started_at=time.time())
@@ -152,10 +197,19 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
         record.updated_at = _utc_now()
         step_gen = trace.add_step(f"generate:rev{rev}")
         step_gen.status = "running"
-        content_hash = hashlib.sha256(
-            f"{record.task_id}:rev{rev}:{json.dumps(guidance)}".encode()
-        ).hexdigest()[:16]
-        step_gen.output = {"revision": rev, "guidance": guidance, "content_hash": content_hash}
+
+        llm_content = _generate_with_llm(record.message, guidance, rev)
+        content = llm_content or f"[simulated] task={record.task_id} rev={rev}"
+        content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+
+        step_gen.output = {
+            "revision": rev,
+            "guidance": guidance,
+            "content_hash": content_hash,
+            "content_preview": content[:200],
+            "llm": llm_content is not None,
+        }
+        record.result_content = content
         step_gen.status = "completed"
         step_gen.ended_at = time.time()
         bus.publish("step.completed", {"step": f"generate:rev{rev}", "task_id": record.task_id})
@@ -330,6 +384,7 @@ async def get_evidence(task_id: str):
     return {
         "task_id": record.task_id,
         "trace": record.trace,
+        "result_content": record.result_content,
         "evidence": {
             "succeeded": 1 if record.status == "succeeded" else 0,
             "self_healed": record.self_healed,

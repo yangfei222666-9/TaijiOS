@@ -20,6 +20,7 @@ export interface TaskStatus {
 
 export interface TaskEvidence {
   task_id: string;
+  result_content: string;
   trace: {
     task_id: string;
     status: string;
