@@ -6,7 +6,7 @@ import { submitTask, streamTask, getTaskEvidence, type StreamEvent, type TaskEvi
 type Phase = "idle" | "submitting" | "streaming" | "done" | "error";
 
 const phaseLabel: Record<Phase, string> = {
-  idle: "", submitting: "Submitting...", streaming: "Running", done: "Completed", error: "Error",
+  idle: "", submitting: "\u63d0\u4ea4\u4e2d...", streaming: "\u6267\u884c\u4e2d", done: "\u5df2\u5b8c\u6210", error: "\u51fa\u9519",
 };
 
 const phaseColorClass: Record<Phase, string> = {
@@ -65,19 +65,19 @@ export default function Home() {
 
   return (
     <div className="page">
-      <h1>TaijiOS Demo</h1>
-      <p className="page-subtitle">Task execution engine — submit, observe, verify</p>
+      <h1>太极OS 演示</h1>
+      <p className="page-subtitle">任务执行引擎 — 提交、观察、验证</p>
 
       <div className="input-row">
         <input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="Describe a task..."
+          placeholder="描述一个任务..."
           disabled={busy}
         />
         <button type="button" onClick={handleSubmit} disabled={!message.trim() || busy}>
-          Run
+          执行
         </button>
       </div>
 
@@ -93,7 +93,7 @@ export default function Home() {
 
       {events.length > 0 && (
         <div className="panel stream-panel">
-          <div className="panel-label">Execution Stream</div>
+          <div className="panel-label">执行流</div>
           {events.map((evt, i) => (
             <div key={i} className="evt-row">
               <span className="evt-ts">{new Date(evt.timestamp * 1000).toLocaleTimeString()}</span>
@@ -107,20 +107,20 @@ export default function Home() {
 
       {evidence && (
         <div className="panel">
-          <div className="panel-label panel-label-lg">Evidence Summary</div>
+          <div className="panel-label panel-label-lg">验证摘要</div>
           <div className="ev-grid">
-            <div>Status: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
-              {evidence.evidence.succeeded ? "SUCCEEDED" : "FAILED"}
+            <div>状态: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
+              {evidence.evidence.succeeded ? "通过" : "失败"}
             </span></div>
-            <div>Score: <span className="c-yellow">{evidence.evidence.final_score}</span></div>
-            <div>Attempts: {evidence.evidence.attempts}</div>
-            <div>Self-healed: {evidence.evidence.self_healed ? "Yes" : "No"}</div>
-            <div>Reason: {evidence.evidence.reason_code}</div>
+            <div>评分: <span className="c-yellow">{evidence.evidence.final_score}</span></div>
+            <div>尝试次数: {evidence.evidence.attempts}</div>
+            <div>自愈: {evidence.evidence.self_healed ? "是" : "否"}</div>
+            <div>原因: {evidence.evidence.reason_code}</div>
           </div>
 
           {evidence.trace?.steps && (
             <div className="trace-section">
-              <div className="panel-label">Trace</div>
+              <div className="panel-label">执行轨迹</div>
               {evidence.trace.steps.map((step, i) => (
                 <div key={i} className="trace-step">
                   <span className={step.status === "completed" ? "c-green" : step.status === "failed" ? "c-red" : "c-dim"}>
@@ -135,7 +135,7 @@ export default function Home() {
 
           {evidence.result_content && (
             <div className="trace-section">
-              <div className="panel-label">Generated Content</div>
+              <div className="panel-label">生成内容</div>
               <pre className="gen-content">{evidence.result_content}</pre>
             </div>
           )}

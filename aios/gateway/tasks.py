@@ -223,7 +223,7 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
         req = ChatCompletionRequest(
             model=provider_cfg.models[0] if provider_cfg.models else "deepseek-chat",
             messages=[
-                ChatMessage(role="system", content="You are a helpful AI assistant. Respond concisely."),
+                ChatMessage(role="system", content="你是一个有用的AI助手。请用中文简洁回答。"),
                 ChatMessage(role="user", content=prompt),
             ],
             max_tokens=512,
