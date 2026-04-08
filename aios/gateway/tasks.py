@@ -41,11 +41,11 @@ router = APIRouter(tags=["tasks"])
 
 def _discretize(score: float) -> int:
     """将 0-1 分数离散化为阴(0)/阳(1)。文本任务场景阈值收紧，让卦象有区分度。"""
-    if score >= 0.85:
+    if score >= 0.90:
         return 1
-    if score <= 0.65:
+    if score <= 0.70:
         return 0
-    return 1 if score >= 0.75 else 0
+    return 1 if score >= 0.80 else 0
 
 
 # 常用卦象映射（精选 20 卦覆盖 demo 场景，其余走 fallback）
