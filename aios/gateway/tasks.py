@@ -145,7 +145,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
 
         cfg = load_config()
         router = ProviderRouter(cfg)
-        provider_cfg = router.select("deepseek-chat")
+        provider_cfg = router.select("claude-haiku-4-5")
         if provider_cfg is None:
             return None
 
@@ -161,7 +161,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         )
 
         req = ChatCompletionRequest(
-            model=provider_cfg.models[0] if provider_cfg.models else "deepseek-chat",
+            model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
             messages=[
                 ChatMessage(role="system", content="You are a strict quality evaluator. Reply with only valid JSON, no markdown."),
                 ChatMessage(role="user", content=prompt),
@@ -208,7 +208,7 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
 
         cfg = load_config()
         router = ProviderRouter(cfg)
-        provider_cfg = router.select("deepseek-chat")
+        provider_cfg = router.select("claude-haiku-4-5")
         if provider_cfg is None:
             return None
 
@@ -221,7 +221,7 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
             prompt += f"\nThis is revision {revision}. Improve based on the guidance above."
 
         req = ChatCompletionRequest(
-            model=provider_cfg.models[0] if provider_cfg.models else "deepseek-chat",
+            model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
             messages=[
                 ChatMessage(role="system", content="你是一个有用的AI助手。请用中文简洁回答。"),
                 ChatMessage(role="user", content=prompt),

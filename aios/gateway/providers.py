@@ -220,8 +220,118 @@ class OpenAICompatProvider(BaseProvider):
         return bool(self.config.api_key)
 
 
+class AnthropicProvider(BaseProvider):
+    """Anthropic Claude API provider."""
+
+    def _headers(self) -> dict:
+        return {
+            "Content-Type": "application/json",
+            "x-api-key": self.config.api_key,
+            "anthropic-version": "2023-06-01",
+        }
+
+    def _build_body(self, req: ChatCompletionRequest) -> dict:
+        # Convert OpenAI-style messages to Anthropic format
+        system = ""
+        messages = []
+        for m in req.messages:
+            if m.role == "system":
+                system = m.content if isinstance(m.content, str) else str(m.content)
+            else:
+                messages.append({"role": m.role, "content": m.content if isinstance(m.content, str) else str(m.content)})
+        body: dict = {
+            "model": req.model,
+            "messages": messages,
+            "max_tokens": req.max_tokens or 1024,
+        }
+        if system:
+            body["system"] = system
+        if req.temperature is not None:
+            body["temperature"] = req.temperature
+        if req.top_p is not None:
+            body["top_p"] = req.top_p
+        return body
+
+    def complete(self, req: ChatCompletionRequest) -> ChatCompletionResponse:
+        url = f"{self.config.base_url}/v1/messages"
+        try:
+            resp = requests.post(url, json=self._build_body(req),
+                                 headers=self._headers(), timeout=self.config.timeout_s)
+        except requests.Timeout:
+            raise ProviderTimeoutError(f"Anthropic timeout after {self.config.timeout_s}s")
+        except requests.ConnectionError:
+            raise ProviderUnavailableError("Anthropic not reachable")
+
+        if resp.status_code != 200:
+            raise ProviderError(f"Anthropic returned {resp.status_code}: {resp.text[:200]}")
+
+        data = resp.json()
+        content = ""
+        for block in data.get("content", []):
+            if block.get("type") == "text":
+                content += block.get("text", "")
+
+        usage = data.get("usage", {})
+        return ChatCompletionResponse(
+            id=data.get("id", f"chatcmpl-{uuid.uuid4().hex[:12]}"),
+            model=data.get("model", req.model),
+            choices=[ChatCompletionChoice(
+                index=0,
+                message=ChoiceMessage(role="assistant", content=content),
+                finish_reason=data.get("stop_reason", "stop"),
+            )],
+            usage=UsageInfo(
+                prompt_tokens=usage.get("input_tokens", 0),
+                completion_tokens=usage.get("output_tokens", 0),
+                total_tokens=usage.get("input_tokens", 0) + usage.get("output_tokens", 0),
+            ),
+        )
+
+    def stream(self, req: ChatCompletionRequest) -> Generator[str, None, None]:
+        url = f"{self.config.base_url}/v1/messages"
+        body = self._build_body(req)
+        body["stream"] = True
+        try:
+            resp = requests.post(url, json=body, headers=self._headers(),
+                                 timeout=self.config.timeout_s, stream=True)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            raise ProviderUnavailableError(f"Anthropic: {e}")
+
+        if resp.status_code != 200:
+            raise ProviderError(f"Anthropic returned {resp.status_code}")
+
+        chunk_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+        for line in resp.iter_lines(decode_unicode=True):
+            if not line or not line.startswith("data: "):
+                continue
+            payload = line[6:].strip()
+            if payload == "[DONE]":
+                break
+            try:
+                evt = json.loads(payload)
+                if evt.get("type") == "content_block_delta":
+                    delta_text = evt.get("delta", {}).get("text", "")
+                    if delta_text:
+                        chunk = ChatCompletionChunk(
+                            id=chunk_id, model=req.model,
+                            choices=[StreamChoice(delta=DeltaMessage(content=delta_text))],
+                        )
+                        yield f"data: {chunk.model_dump_json()}\n\n"
+                elif evt.get("type") == "message_stop":
+                    break
+            except Exception:
+                continue
+
+        yield "data: [DONE]\n\n"
+
+    def check_health(self) -> bool:
+        return bool(self.config.api_key)
+
+
 def create_provider(config: ProviderConfig) -> BaseProvider:
     """Factory: create the right provider client based on config name."""
     if config.name == "ollama":
         return OllamaProvider(config)
+    if config.name == "anthropic":
+        return AnthropicProvider(config)
     return OpenAICompatProvider(config)
