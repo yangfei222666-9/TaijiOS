@@ -207,7 +207,7 @@ export default function Home() {
               <div className="hex-header">
                 <span className="hex-name">{evidence.hexagram.name}</span>
                 <span className={`hex-risk ${evidence.hexagram.risk === "低风险" ? "c-green" : evidence.hexagram.risk === "中风险" ? "c-yellow" : "c-red"}`}>{evidence.hexagram.risk}</span>
-                <span className="hex-bits">{evidence.hexagram.bits}</span>
+                <span className="hex-bits">{(() => { const y = evidence.hexagram!.bits.split("").filter(b => b === "1").length; const total = evidence.hexagram!.bits.length; return y === total ? "六爻全阳" : y === 0 ? "六爻全阴" : `${y}阳${total - y}阴`; })()}</span>
               </div>
               <div className="hex-meaning">{evidence.hexagram.meaning}</div>
               <div className="hex-lines">
