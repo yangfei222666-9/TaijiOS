@@ -31,12 +31,16 @@ TaijiOS is a framework for building AI systems that improve themselves through e
 - Webhook delivery chain: retry + delivery confirmation + DLQ separation (3/3 PASS)
 - GitHub learning pipeline: discover→analyze→digest→gate→solidify (small sample)
 - Experience retrieval and injection into planner
+- Quickstart works without Ollama (3/3 tasks, self-heal demo)
+- Coherent engine test suite: 144 tests, 71% coverage
+- Task API v0: submit/query/stream/evidence (4 endpoints)
+- Spawn E2E gate: scheduled every 30min, evidence-based
 
 **In Progress 进行中:**
 
 - Experience flywheel at larger scale
 - Self-healing in production main loop
-- Quickstart that works without Ollama
+- Web demo (single-page experience shell)
 
 ## Architecture 架构
 
