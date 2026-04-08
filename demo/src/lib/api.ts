@@ -41,6 +41,9 @@ export interface TaskEvidence {
     final_score: number;
     attempts: number;
     reason_code: string;
+    validator: string;
+    checks: Record<string, { score: number; passed: boolean; reason: string }> | null;
+    fix_suggestions: string[];
   };
   events: Array<{ ts: number; type: string; data: Record<string, unknown> }>;
 }

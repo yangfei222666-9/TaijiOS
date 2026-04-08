@@ -22,6 +22,9 @@ from pydantic import BaseModel, Field
 
 from .streaming import sse_response
 
+from coherent_engine.pipeline.reason_codes import RC, failed_checks_to_rc
+from coherent_engine.modules.validator import WEIGHTS, PASS_THRESHOLD, FIX_SUGGESTIONS
+
 import logging
 
 log = logging.getLogger("gateway.tasks")
@@ -48,6 +51,9 @@ class TaskRecord:
     result_content: str = ""
     events: list = field(default_factory=list)
     trace: dict | None = None
+    validation_checks: dict | None = None
+    fix_suggestions: list = field(default_factory=list)
+    validator_name: str = ""
 
 
 # ── In-memory store ──────────────────────────────────────────────
@@ -115,26 +121,41 @@ class RunTrace:
 
 
 def _validate(data: dict, attempt: int, content: str = "", message: str = "") -> dict:
-    """Validate generated content. Uses LLM scoring if available, else simulated."""
+    """Validate generated content. Uses coherent_engine LLM scoring if available, else simulated."""
     result = _validate_with_llm(content, message)
     if result is not None:
         return result
-    # Fallback: simulated
+    # Fallback: simulated coherent_engine-format result
     score = 0.35 + (attempt - 1) * 0.55
-    passed = score >= 0.80
-    failed_checks = []
-    if not passed:
-        failed_checks = ["style_consistency", "character_consistency"]
+    passed = score >= PASS_THRESHOLD
+    checks = {}
+    for name, weight in WEIGHTS.items():
+        s = score + (0.05 if name == "subtitle_safety" else 0.0)
+        s = min(1.0, s)
+        checks[name] = {
+            "score": round(s, 4),
+            "passed": s >= 0.80,
+            "reason": f"OK ({s:.3f})" if s >= 0.80 else f"simulated: {s:.3f} < 0.80",
+        }
+    failed = [k for k, v in checks.items() if not v["passed"]]
+    fix_sugg = [FIX_SUGGESTIONS[k] for k in failed if k in FIX_SUGGESTIONS]
+    rc = RC.OK if passed else failed_checks_to_rc(failed)
     return {
         "score": round(score, 4),
         "passed": passed,
-        "failed_checks": failed_checks,
-        "reason_code": "OK" if passed else "coherent.validator.style_consistency",
+        "checks": checks,
+        "failed_checks": failed,
+        "fix_suggestions": fix_sugg,
+        "reason_code": rc,
+        "validator": "coherent_engine (simulated)",
     }
 
 
 def _validate_with_llm(content: str, message: str) -> dict | None:
-    """Use LLM to score generated content quality. Returns score dict or None."""
+    """
+    Use LLM to score content on coherent_engine's 4 validation dimensions.
+    Returns coherent_engine-compatible result dict or None on failure.
+    """
     if not content or not message:
         return None
     try:
@@ -144,26 +165,34 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         from .schemas import ChatCompletionRequest, ChatMessage
 
         cfg = load_config()
-        router = ProviderRouter(cfg)
-        provider_cfg = router.select("claude-haiku-4-5")
+        router_inst = ProviderRouter(cfg)
+        provider_cfg = router_inst.select("claude-haiku-4-5")
         if provider_cfg is None:
             return None
 
         provider = create_provider(provider_cfg)
 
+        check_names = list(WEIGHTS.keys())
         prompt = (
-            f"Rate the following AI response on a scale of 0.0 to 1.0.\n"
+            f"You are the coherent_engine quality validator for TaijiOS.\n"
+            f"Score the following AI response on 4 dimensions, each 0.0-1.0.\n\n"
             f"Task: {message}\n"
             f"Response: {content}\n\n"
-            f"Score criteria: relevance, completeness, clarity. The response language (Chinese or English) does not affect the score.\n"
-            f"Reply with ONLY a JSON object: {{\"score\": 0.XX, \"passed\": true/false, \"failed_checks\": [], \"reason_code\": \"OK\"}}\n"
-            f"passed = true if score >= 0.7. If failed, set failed_checks to relevant issues and reason_code to a short code."
+            f"Dimensions:\n"
+            f"- character_consistency: Does the response maintain a consistent identity/voice?\n"
+            f"- style_consistency: Is the tone and style uniform throughout?\n"
+            f"- shot_continuity: Does the response flow logically without abrupt jumps?\n"
+            f"- subtitle_safety: Is the content clear, readable, well-formatted?\n\n"
+            f"The response language (Chinese or English) does not affect scores.\n"
+            f"Reply with ONLY a JSON object:\n"
+            f'{{"character_consistency": 0.XX, "style_consistency": 0.XX, '
+            f'"shot_continuity": 0.XX, "subtitle_safety": 0.XX}}'
         )
 
         req = ChatCompletionRequest(
             model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
             messages=[
-                ChatMessage(role="system", content="You are a quality evaluator. Reply with only valid JSON, no markdown, no code fences."),
+                ChatMessage(role="system", content="You are coherent_engine validator. Reply with only valid JSON, no markdown, no code fences."),
                 ChatMessage(role="user", content=prompt),
             ],
             max_tokens=128,
@@ -174,27 +203,55 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
             return None
 
         raw = resp.choices[0].message.content.strip()
-        # Parse JSON from response
-        result = json.loads(raw)
-        score = float(result.get("score", 0))
-        passed = result.get("passed", score >= 0.7)
+        scores_raw = json.loads(raw)
+
+        # Build coherent_engine-format checks
+        checks = {}
+        for name in check_names:
+            s = float(scores_raw.get(name, 0.0))
+            s = max(0.0, min(1.0, s))
+            passed = s >= 0.80
+            checks[name] = {
+                "score": round(s, 4),
+                "passed": passed,
+                "reason": f"OK ({s:.3f})" if passed else f"below threshold: {s:.3f} < 0.80",
+            }
+
+        # Weighted total (same as coherent_engine validator)
+        total_score = sum(checks[k]["score"] * WEIGHTS[k] for k in WEIGHTS)
+        total_score = round(max(0.0, min(1.0, total_score)), 4)
+        overall_passed = total_score >= PASS_THRESHOLD
+
+        failed = [k for k, v in checks.items() if not v["passed"]]
+        fix_sugg = [FIX_SUGGESTIONS[k] for k in failed if k in FIX_SUGGESTIONS]
+        rc = RC.OK if overall_passed else failed_checks_to_rc(failed)
+
         return {
-            "score": round(score, 4),
-            "passed": passed,
-            "failed_checks": result.get("failed_checks", []),
-            "reason_code": result.get("reason_code", "OK" if passed else "quality.low"),
+            "score": total_score,
+            "passed": overall_passed,
+            "checks": checks,
+            "failed_checks": failed,
+            "fix_suggestions": fix_sugg,
+            "reason_code": rc,
+            "validator": "coherent_engine",
         }
     except Exception as e:
-        log.warning(f"LLM validate failed, falling back to simulation: {e}")
+        log.warning(f"coherent_engine validate failed, falling back to simulation: {e}")
         return None
 
 
 def _guidance_from_failures(failed_checks: list) -> dict:
+    """Build guidance dict from coherent_engine failed checks."""
     guidance = {}
+    for check in failed_checks:
+        if check in FIX_SUGGESTIONS:
+            guidance[check] = FIX_SUGGESTIONS[check]
     if "style_consistency" in failed_checks:
         guidance["stable_style"] = True
     if "character_consistency" in failed_checks:
         guidance["stable_character"] = True
+    if "shot_continuity" in failed_checks:
+        guidance["stable_continuity"] = True
     return guidance
 
 
@@ -305,6 +362,12 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
                 "failed_checks": scores["failed_checks"], "rev": rev,
             })
             guidance = _guidance_from_failures(scores["failed_checks"])
+
+    # Store coherent_engine validation details from last attempt
+    if last_scores:
+        record.validation_checks = last_scores.get("checks")
+        record.fix_suggestions = last_scores.get("fix_suggestions", [])
+        record.validator_name = last_scores.get("validator", "")
 
     # Deliver
     record.phase = "deliver"
@@ -481,6 +544,9 @@ async def get_evidence(task_id: str):
             "final_score": record.score,
             "attempts": record.attempts,
             "reason_code": record.reason_code,
+            "validator": record.validator_name,
+            "checks": record.validation_checks,
+            "fix_suggestions": record.fix_suggestions,
         },
         "events": record.events,
     }

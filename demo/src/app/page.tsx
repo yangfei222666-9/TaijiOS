@@ -149,6 +149,9 @@ export default function Home() {
       {evidence && (
         <div className="panel">
           <div className="panel-label panel-label-lg">验证摘要</div>
+          {evidence.evidence.validator && (
+            <div className="validator-tag">验证器: {evidence.evidence.validator}</div>
+          )}
           <div className="ev-grid">
             <div>状态: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
               {evidence.evidence.succeeded ? "通过" : "失败"}
@@ -158,6 +161,31 @@ export default function Home() {
             <div>自愈: {evidence.evidence.self_healed ? "是" : "否"}</div>
             <div>原因: {evidence.evidence.reason_code}</div>
           </div>
+
+          {evidence.evidence.checks && (
+            <div className="trace-section">
+              <div className="panel-label">四维检查</div>
+              <div className="checks-grid">
+                {Object.entries(evidence.evidence.checks).map(([name, check]) => (
+                  <div key={name} className="check-row">
+                    <span className={check.passed ? "c-green" : "c-red"}>{check.passed ? "+" : "x"}</span>
+                    <span className="check-name">{name}</span>
+                    <span className="c-yellow">{check.score}</span>
+                    <span className="c-dim">{check.reason}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {evidence.evidence.fix_suggestions && evidence.evidence.fix_suggestions.length > 0 && (
+            <div className="trace-section">
+              <div className="panel-label">修复建议</div>
+              {evidence.evidence.fix_suggestions.map((s, i) => (
+                <div key={i} className="fix-row">{s}</div>
+              ))}
+            </div>
+          )}
 
           {evidence.trace?.steps && (
             <div className="trace-section">

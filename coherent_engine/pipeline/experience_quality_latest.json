@@ -1,19 +1,65 @@
 {
-  "generated_at": "2026-04-07T09:10:33Z",
-  "total": 22,
-  "active": 22,
-  "quarantined": 0,
+  "generated_at": "2026-04-08T07:13:41Z",
+  "total": 11,
+  "active": 9,
+  "quarantined": 2,
   "expired": 0,
   "decayed": 0,
-  "github_learning": 20,
+  "github_learning": 2,
   "top_good": [
     {
-      "experience_id": "github_61c647b41f3fcf3e",
-      "confidence": 0.789,
-      "hit_count": 4
+      "experience_id": "seed_002",
+      "confidence": 1.0,
+      "hit_count": 12
+    },
+    {
+      "experience_id": "seed_003",
+      "confidence": 1.0,
+      "hit_count": 10
+    },
+    {
+      "experience_id": "exp_auto_45b817906007",
+      "confidence": 0.9994,
+      "hit_count": 15
+    },
+    {
+      "experience_id": "seed_004",
+      "confidence": 0.8546,
+      "hit_count": 14
+    },
+    {
+      "experience_id": "github_3862fab3f05bc228",
+      "confidence": 0.8465,
+      "hit_count": 5
     }
   ],
-  "top_bad": [],
+  "top_bad": [
+    {
+      "experience_id": "seed_004",
+      "confidence": 0.8546,
+      "hit_count": 14
+    },
+    {
+      "experience_id": "github_3862fab3f05bc228",
+      "confidence": 0.8465,
+      "hit_count": 5
+    },
+    {
+      "experience_id": "github_4774133980e77b07",
+      "confidence": 0.8465,
+      "hit_count": 5
+    },
+    {
+      "experience_id": "github_nodeB-memory-sync-001",
+      "confidence": 0.8465,
+      "hit_count": 5
+    },
+    {
+      "experience_id": "github_nodeB-supply-chain-001",
+      "confidence": 0.8465,
+      "hit_count": 5
+    }
+  ],
   "rollback_candidates": [],
   "rules_applied": [
     "ttl_check",
@@ -22,5 +68,5 @@
     "auto_quarantine_30pct"
   ],
   "sample_window": "",
-  "latest_cycle_id": "worker-cycle-3"
+  "latest_cycle_id": "job:test_job_001"
 }
