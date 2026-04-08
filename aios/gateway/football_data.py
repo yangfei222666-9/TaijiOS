@@ -172,8 +172,43 @@ def get_team_profile(team_name: str) -> dict:
     return {"name": team_name, "fifa_rank": "未知", "style": "未知", "stars": "未知", "recent": "未知"}
 
 
+_EN_TO_CN = {
+    "mexico": "墨西哥", "south africa": "南非", "korea republic": "韩国",
+    "czechia": "捷克", "canada": "加拿大", "bosnia-herzegovina": "波黑",
+    "qatar": "卡塔尔", "switzerland": "瑞士", "usa": "美国",
+    "paraguay": "巴拉圭", "brazil": "巴西", "argentina": "阿根廷",
+    "france": "法国", "england": "英格兰", "germany": "德国",
+    "spain": "西班牙", "portugal": "葡萄牙", "netherlands": "荷兰",
+    "italy": "意大利", "japan": "日本", "morocco": "摩洛哥",
+    "croatia": "克罗地亚", "belgium": "比利时", "colombia": "哥伦比亚",
+    "uruguay": "乌拉圭", "senegal": "塞内加尔", "australia": "澳大利亚",
+    "poland": "波兰", "denmark": "丹麦", "serbia": "塞尔维亚",
+    "ecuador": "厄瓜多尔", "saudi arabia": "沙特", "iran": "伊朗",
+    "nigeria": "尼日利亚", "cameroon": "喀麦隆", "ghana": "加纳",
+    "egypt": "埃及", "tunisia": "突尼斯", "chile": "智利",
+    "peru": "秘鲁", "costa rica": "哥斯达黎加", "panama": "巴拿马",
+    "honduras": "洪都拉斯", "jamaica": "牙买加", "turkey": "土耳其",
+    "austria": "奥地利", "scotland": "苏格兰", "wales": "威尔士",
+}
+
+
+def _normalize_team(name: str) -> str:
+    """将英文队名转为中文，已是中文则原样返回。"""
+    cleaned = name.strip()
+    # 去掉常见前缀后缀
+    for prefix in ("预测", "分析"):
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):].strip()
+    for suffix in ("的比赛结果", "的比赛", "比赛结果", "比赛"):
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[:-len(suffix)].strip()
+    return _EN_TO_CN.get(cleaned.lower(), cleaned)
+
+
 def build_prediction_context(home: str, away: str) -> str:
     """构建预测所需的完整数据上下文。"""
+    home = _normalize_team(home)
+    away = _normalize_team(away)
     home_profile = get_team_profile(home)
     away_profile = get_team_profile(away)
 
