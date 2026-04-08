@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install requests httpx numpy fastapi uvicorn
+        run: pip install -e .
       - name: Check core imports
         run: |
           python -c "from aios.core.event_bus import EventBus; print('OK: event_bus')"
