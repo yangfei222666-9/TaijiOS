@@ -172,6 +172,11 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         cfg = load_config()
         router_inst = ProviderRouter(cfg)
         provider_cfg = router_inst.select("claude-haiku-4-5")
+        if provider_cfg is None or provider_cfg.name != "anthropic":
+            for p in cfg.providers:
+                if p.name == "anthropic" and p.enabled:
+                    provider_cfg = p
+                    break
         if provider_cfg is None:
             return None
 
@@ -195,7 +200,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         )
 
         req = ChatCompletionRequest(
-            model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
+            model="claude-haiku-4-5",
             messages=[
                 ChatMessage(role="system", content="You are coherent_engine validator. Reply with only valid JSON, no markdown, no code fences."),
                 ChatMessage(role="user", content=prompt),
@@ -269,8 +274,16 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
         from .schemas import ChatCompletionRequest, ChatMessage
 
         cfg = load_config()
-        router = ProviderRouter(cfg)
-        provider_cfg = router.select("claude-haiku-4-5")
+        router_inst = ProviderRouter(cfg)
+        provider_cfg = router_inst.select("claude-haiku-4-5")
+        log.info(f"generate: selected provider={provider_cfg.name if provider_cfg else None}, models={provider_cfg.models if provider_cfg else []}")
+        if provider_cfg is None or provider_cfg.name != "anthropic":
+            # Force anthropic if available
+            for p in cfg.providers:
+                if p.name == "anthropic" and p.enabled:
+                    provider_cfg = p
+                    log.info("generate: forced anthropic provider")
+                    break
         if provider_cfg is None:
             return None
 
@@ -283,7 +296,7 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
             prompt += f"\nThis is revision {revision}. Improve based on the guidance above."
 
         req = ChatCompletionRequest(
-            model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
+            model="claude-haiku-4-5",
             messages=[
                 ChatMessage(role="system", content="你是一个有用的AI助手。请用中文简洁回答。"),
                 ChatMessage(role="user", content=prompt),
