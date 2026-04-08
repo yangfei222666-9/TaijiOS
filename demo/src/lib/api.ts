@@ -45,6 +45,22 @@ export interface TaskEvidence {
   events: Array<{ ts: number; type: string; data: Record<string, unknown> }>;
 }
 
+export interface TaskStats {
+  total: number;
+  running: number;
+  succeeded: number;
+  failed: number;
+  self_healed: number;
+  avg_score: number;
+  uptime_s: number;
+}
+
+export async function getTaskStats(): Promise<TaskStats> {
+  const res = await fetch(`${API_BASE}/v1/tasks/stats`);
+  if (!res.ok) throw new Error(`Stats failed: ${res.status}`);
+  return res.json();
+}
+
 export async function submitTask(message: string, maxRetries = 2): Promise<TaskSubmitResponse> {
   const res = await fetch(`${API_BASE}/v1/tasks`, {
     method: "POST",

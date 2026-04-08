@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { submitTask, streamTask, getTaskEvidence, type StreamEvent, type TaskEvidence } from "@/lib/api";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { submitTask, streamTask, getTaskEvidence, getTaskStats, type StreamEvent, type TaskEvidence, type TaskStats } from "@/lib/api";
 
 type Phase = "idle" | "submitting" | "streaming" | "done" | "error";
 
@@ -34,6 +34,14 @@ export default function Home() {
   const [taskId, setTaskId] = useState("");
   const cancelRef = useRef<(() => void) | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
+  const [stats, setStats] = useState<TaskStats | null>(null);
+
+  useEffect(() => {
+    const fetch = () => { getTaskStats().then(setStats).catch(() => {}); };
+    fetch();
+    const id = setInterval(fetch, 5000);
+    return () => clearInterval(id);
+  }, []);
 
   const scrollToBottom = () => eventsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   const busy = phase === "submitting" || phase === "streaming";
@@ -65,6 +73,20 @@ export default function Home() {
 
   return (
     <div className="page">
+      {stats && (
+        <div className="sys-bar">
+          <span className="sys-dot" />
+          <span>系统运行中</span>
+          <span className="sys-sep" />
+          <span>已完成 <b>{stats.succeeded}</b></span>
+          <span className="sys-sep" />
+          <span>自愈 <b>{stats.self_healed}</b></span>
+          <span className="sys-sep" />
+          <span>均分 <b>{stats.avg_score}</b></span>
+          {stats.running > 0 && <><span className="sys-sep" /><span className="c-accent">执行中 {stats.running}</span></>}
+        </div>
+      )}
+
       <h1>太极OS 演示</h1>
       <p className="page-subtitle">任务执行引擎 — 提交、观察、验证</p>
 

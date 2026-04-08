@@ -352,6 +352,30 @@ class TaskSubmitRequest(BaseModel):
 
 # ── Routes ───────────────────────────────────────────────────────
 
+_boot_time = time.time()
+
+
+@router.get("/v1/tasks/stats")
+async def task_stats():
+    with _lock:
+        records = list(_store.values())
+    total = len(records)
+    running = sum(1 for r in records if r.status == "running")
+    succeeded = sum(1 for r in records if r.status == "succeeded")
+    failed = sum(1 for r in records if r.status == "failed")
+    healed = sum(1 for r in records if r.self_healed)
+    avg_score = round(sum(r.score for r in records if r.score > 0) / max(1, succeeded + failed), 2)
+    return {
+        "total": total,
+        "running": running,
+        "succeeded": succeeded,
+        "failed": failed,
+        "self_healed": healed,
+        "avg_score": avg_score,
+        "uptime_s": round(time.time() - _boot_time, 1),
+    }
+
+
 @router.post("/v1/tasks")
 async def submit_task(req: TaskSubmitRequest):
     task_id = _gen_task_id()
