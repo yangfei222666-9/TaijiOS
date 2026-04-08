@@ -85,7 +85,7 @@ export default function Home() {
         <div className="status-bar">
           <span className={`status-dot ${phaseColorClass[phase]}${phase === "streaming" ? " pulse" : ""}`} />
           <span className={phaseColorClass[phase]}>{phaseLabel[phase]}</span>
-          {taskId && <span className="status-tid">({taskId})</span>}
+          {taskId && <span className="status-tid">任务 {taskId}</span>}
         </div>
       )}
 
