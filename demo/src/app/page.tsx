@@ -164,7 +164,7 @@ export default function Home() {
         <div className="panel">
           <div className="panel-label panel-label-lg">验证摘要</div>
           {evidence.evidence.validator && (
-            <div className="validator-tag">验证器: {evidence.evidence.validator}</div>
+            <div className="validator-tag">验证器: coherent_engine — TaijiOS 内容质量验证引擎</div>
           )}
           <div className="ev-grid">
             <div>状态: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
