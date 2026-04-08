@@ -177,6 +177,8 @@ _EN_TO_CN = {
 
 def _normalize_team(name: str) -> str:
     """将英文队名转为中文，已是中文则原样返回。"""
+    if not name:
+        return ""
     cleaned = name.strip()
     for prefix in ("预测", "分析"):
         if cleaned.startswith(prefix):
