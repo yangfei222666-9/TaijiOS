@@ -48,28 +48,28 @@ def _discretize(score: float) -> int:
     return 1 if score >= 0.80 else 0
 
 
-# 常用卦象映射（精选 20 卦覆盖 demo 场景，其余走 fallback）
+# 常用卦象映射（精选 20 卦覆盖预测场景，其余走 fallback）
 _HEXAGRAM_TABLE: dict[str, dict] = {
-    "111111": {"name": "乾卦", "meaning": "系统整体健康，可提升吞吐", "risk": "低风险", "actions": ["提升吞吐量", "保持高性能运行", "启用积极缓存"]},
-    "000000": {"name": "坤卦", "meaning": "系统稳定可靠，适合长期运行", "risk": "低风险", "actions": ["维持稳定状态", "启用冗余备份", "持续监控健康指标"]},
-    "010101": {"name": "既济卦", "meaning": "任务连续成功，系统达到最佳状态", "risk": "低风险", "actions": ["沉淀最佳实践", "保持当前策略", "分享成功经验"]},
-    "000111": {"name": "泰卦", "meaning": "系统运行顺畅，各模块协调良好", "risk": "低风险", "actions": ["维持协调状态", "优化模块协作", "共享资源"]},
-    "101010": {"name": "未济卦", "meaning": "任务未完成，需要干预调整", "risk": "高风险", "actions": ["启动恢复模式", "分析失败模式", "应用历史修复方案"]},
-    "111000": {"name": "否卦", "meaning": "系统阻滞，存在瓶颈", "risk": "高风险", "actions": ["定位瓶颈", "清理队列", "重启阻塞任务"]},
-    "010110": {"name": "困卦", "meaning": "资源耗尽，系统陷入困境", "risk": "严重风险", "actions": ["释放资源", "延迟非关键任务", "申请资源分配"]},
-    "001010": {"name": "蹇卦", "meaning": "系统阻塞，基础设施异常", "risk": "严重风险", "actions": ["暂停当前任务", "检查API健康", "指数退避重试"]},
-    "011110": {"name": "大过卦", "meaning": "系统过载，超出承载上限", "risk": "严重风险", "actions": ["降低负载", "启用限流", "减少并发"]},
-    "010000": {"name": "屯卦", "meaning": "系统初始化中，尚未就绪", "risk": "中风险", "actions": ["延长超时时间", "启用调试日志", "允许慢启动"]},
-    "000010": {"name": "蒙卦", "meaning": "模型加载中，正在预热", "risk": "中风险", "actions": ["预热模型", "检查依赖", "验证初始化"]},
-    "001011": {"name": "渐卦", "meaning": "系统稳步提升，循序渐进", "risk": "低风险", "actions": ["监控进度", "优化缓存", "逐步扩容"]},
-    "110001": {"name": "益卦", "meaning": "系统能力提升，可扩展容量", "risk": "低风险", "actions": ["扩展容量", "提升吞吐", "投入增长"]},
-    "000001": {"name": "复卦", "meaning": "从失败中恢复，系统复苏", "risk": "中风险", "actions": ["监控恢复进度", "验证修复效果", "记录经验教训"]},
-    "010010": {"name": "解卦", "meaning": "困境已缓解，可恢复正常", "risk": "中风险", "actions": ["验证问题已解决", "恢复正常运行", "防止问题复发"]},
-    "001110": {"name": "恒卦", "meaning": "系统长期稳定运行", "risk": "低风险", "actions": ["维持稳态", "优化持久性", "启用预测性维护"]},
-    "011111": {"name": "大壮卦", "meaning": "系统强壮有力，可大胆推进", "risk": "低风险", "actions": ["发挥优势", "大胆推进", "抓住机会"]},
-    "111110": {"name": "夬卦", "meaning": "需要果断决策，快速行动", "risk": "中风险", "actions": ["果断决策", "立即行动", "快速解决"]},
-    "110011": {"name": "革卦", "meaning": "需要变革，拥抱创新", "risk": "中风险", "actions": ["实施变革", "拥抱创新", "重构方案"]},
-    "011000": {"name": "萃卦", "meaning": "资源聚集，适合整合发力", "risk": "低风险", "actions": ["聚集资源", "整合力量", "加强协作"]},
+    "111111": {"name": "乾卦", "meaning": "数据充分，预测可信，可积极参考", "risk": "低风险", "actions": ["积极参考预测", "关注核心比分区间", "可适度跟进"]},
+    "000000": {"name": "坤卦", "meaning": "数据平稳，无明显倾向，建议观望", "risk": "低风险", "actions": ["保持观望", "等待更多信息", "不急于判断"]},
+    "010101": {"name": "既济卦", "meaning": "分析完整，逻辑自洽，预测质量高", "risk": "低风险", "actions": ["信赖当前分析", "关注风险提示", "可作为决策参考"]},
+    "000111": {"name": "泰卦", "meaning": "数据与逻辑协调，预测稳健", "risk": "低风险", "actions": ["稳健参考", "注意赛前变化", "保持理性"]},
+    "101010": {"name": "未济卦", "meaning": "数据不足或矛盾，预测不确定性高", "risk": "高风险", "actions": ["谨慎对待预测", "补充数据再判断", "建议观望"]},
+    "111000": {"name": "否卦", "meaning": "关键信息缺失，预测可靠性低", "risk": "高风险", "actions": ["不建议参考", "等待赛前确认", "关注阵容公布"]},
+    "010110": {"name": "困卦", "meaning": "数据矛盾严重，无法给出可靠预测", "risk": "严重风险", "actions": ["放弃本场预测", "等待更多信息", "不做判断"]},
+    "001010": {"name": "蹇卦", "meaning": "数据源异常，预测依据薄弱", "risk": "严重风险", "actions": ["暂停预测", "检查数据来源", "等待数据恢复"]},
+    "011110": {"name": "大过卦", "meaning": "预测过度自信，风险被低估", "risk": "严重风险", "actions": ["降低置信度", "重新评估风险", "保守处理"]},
+    "010000": {"name": "屯卦", "meaning": "赛事信息尚未完整，预测偏早", "risk": "中风险", "actions": ["等待阵容公布", "关注赛前训练", "暂缓判断"]},
+    "000010": {"name": "蒙卦", "meaning": "对阵双方了解不足，需补充研究", "risk": "中风险", "actions": ["补充球队研究", "查看历史交锋", "收集更多数据"]},
+    "001011": {"name": "渐卦", "meaning": "预测逐步成型，但仍需验证", "risk": "低风险", "actions": ["持续关注", "赛前再确认", "逐步建立判断"]},
+    "110001": {"name": "益卦", "meaning": "新数据增强了预测可信度", "risk": "低风险", "actions": ["更新预测", "纳入新信息", "提升置信度"]},
+    "000001": {"name": "复卦", "meaning": "修正后预测质量提升", "risk": "中风险", "actions": ["参考修正版本", "注意修正原因", "保持谨慎"]},
+    "010010": {"name": "解卦", "meaning": "不确定因素已消除，预测趋于明朗", "risk": "中风险", "actions": ["确认关键变量", "更新判断", "可适度参考"]},
+    "001110": {"name": "恒卦", "meaning": "预测结论稳定，多轮验证一致", "risk": "低风险", "actions": ["可信赖当前结论", "关注临场变化", "稳健参考"]},
+    "011111": {"name": "大壮卦", "meaning": "强队优势明显，预测方向清晰", "risk": "低风险", "actions": ["关注强队表现", "注意爆冷风险", "理性看待"]},
+    "111110": {"name": "夬卦", "meaning": "需要果断判断，信息窗口即将关闭", "risk": "中风险", "actions": ["尽快做出判断", "不再等待", "接受不确定性"]},
+    "110011": {"name": "革卦", "meaning": "赛前出现重大变化，需更新预测", "risk": "中风险", "actions": ["重新评估", "关注最新消息", "调整预测"]},
+    "011000": {"name": "萃卦", "meaning": "多方数据汇聚，预测依据充分", "risk": "低风险", "actions": ["综合判断", "交叉验证", "形成结论"]},
 }
 
 
@@ -92,13 +92,13 @@ def _map_hexagram(bits: str) -> dict:
 
 
 def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
-    """从 coherent_engine 四维检查 + pipeline 运行时指标计算任务卦象。"""
+    """从预测验证四维检查 + pipeline 运行时指标计算任务卦象。"""
     import random
     checks = scores.get("checks", {})
-    cc = checks.get("character_consistency", {}).get("score", 0.5)
-    sc = checks.get("style_consistency", {}).get("score", 0.5)
-    cont = checks.get("shot_continuity", {}).get("score", 0.5)
-    sub = checks.get("subtitle_safety", {}).get("score", 0.5)
+    dc = checks.get("data_completeness", {}).get("score", 0.5)
+    lc = checks.get("logic_consistency", {}).get("score", 0.5)
+    cc = checks.get("confidence_calibration", {}).get("score", 0.5)
+    rc = checks.get("risk_coverage", {}).get("score", 0.5)
     total = scores.get("score", 0.5)
 
     # 环境扰动：模拟真实系统中的波动（±0.15），让卦象有区分度
@@ -106,12 +106,12 @@ def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
         return max(0.0, min(1.0, v + random.uniform(-0.15, 0.05)))
 
     dims = [
-        _jitter(total) * (1.0 if llm_ok else 0.3),                                          # 初爻：基础设施
-        _jitter(cc),                                                                          # 二爻：角色一致性
-        _jitter(sc),                                                                          # 三爻：风格一致性
-        _jitter(cont),                                                                        # 四爻：连贯性
-        _jitter(sub) * ({1: 0.95, 2: 0.75}.get(attempt, 0.5)),                               # 五爻：可读性 × 自愈衰减
-        (cc + sc + cont + sub) / 4.0 * (0.85 if scores.get("passed") else 0.45),             # 上爻：综合治理（不加扰动，保持稳定）
+        _jitter(total) * (1.0 if llm_ok else 0.3),                                          # 初爻：数据基础
+        _jitter(dc),                                                                          # 二爻：数据完整性
+        _jitter(lc),                                                                          # 三爻：逻辑一致性
+        _jitter(cc),                                                                          # 四爻：置信校准
+        _jitter(rc) * ({1: 0.95, 2: 0.75}.get(attempt, 0.5)),                               # 五爻：风险覆盖 × 自愈衰减
+        (dc + lc + cc + rc) / 4.0 * (0.85 if scores.get("passed") else 0.45),               # 上爻：综合判断（不加扰动，保持稳定）
     ]
     bits = "".join(str(_discretize(d)) for d in dims)
     hexagram = _map_hexagram(bits)
@@ -122,12 +122,12 @@ def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
         "actions": hexagram["actions"][:3],
         "bits": bits,
         "lines": {
-            "初爻·基础设施": round(dims[0], 2),
-            "二爻·角色一致": round(dims[1], 2),
-            "三爻·风格一致": round(dims[2], 2),
-            "四爻·连贯性": round(dims[3], 2),
-            "五爻·可读性": round(dims[4], 2),
-            "上爻·综合治理": round(dims[5], 2),
+            "初爻·数据基础": round(dims[0], 2),
+            "二爻·数据完整": round(dims[1], 2),
+            "三爻·逻辑一致": round(dims[2], 2),
+            "四爻·置信校准": round(dims[3], 2),
+            "五爻·风险覆盖": round(dims[4], 2),
+            "上爻·综合判断": round(dims[5], 2),
         },
     }
 
@@ -278,27 +278,27 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
 
         provider = create_provider(provider_cfg)
 
-        check_names = list(WEIGHTS.keys())
+        check_names = ["data_completeness", "logic_consistency", "confidence_calibration", "risk_coverage"]
         prompt = (
-            f"You are the coherent_engine quality validator for TaijiOS.\n"
-            f"Score the following AI response on 4 dimensions, each 0.0-1.0.\n\n"
-            f"Task: {message}\n"
-            f"Response: {content}\n\n"
+            f"You are the TaijiOS prediction validator.\n"
+            f"Score the following match prediction on 4 dimensions, each 0.0-1.0.\n\n"
+            f"Request: {message}\n"
+            f"Prediction: {content}\n\n"
             f"Dimensions:\n"
-            f"- character_consistency: Does the response maintain a consistent identity/voice?\n"
-            f"- style_consistency: Is the tone and style uniform throughout?\n"
-            f"- shot_continuity: Does the response flow logically without abrupt jumps?\n"
-            f"- subtitle_safety: Is the content clear, readable, well-formatted?\n\n"
+            f"- data_completeness: Does the prediction reference real team data, stats, or facts?\n"
+            f"- logic_consistency: Are the prediction and supporting reasons logically consistent?\n"
+            f"- confidence_calibration: Is the confidence level appropriate (not overconfident)?\n"
+            f"- risk_coverage: Does it mention key risk factors and uncertainties?\n\n"
             f"The response language (Chinese or English) does not affect scores.\n"
             f"Reply with ONLY a JSON object:\n"
-            f'{{"character_consistency": 0.XX, "style_consistency": 0.XX, '
-            f'"shot_continuity": 0.XX, "subtitle_safety": 0.XX}}'
+            f'{{"data_completeness": 0.XX, "logic_consistency": 0.XX, '
+            f'"confidence_calibration": 0.XX, "risk_coverage": 0.XX}}'
         )
 
         req = ChatCompletionRequest(
             model="claude-haiku-4-5",
             messages=[
-                ChatMessage(role="system", content="You are coherent_engine validator. Reply with only valid JSON, no markdown, no code fences."),
+                ChatMessage(role="system", content="You are TaijiOS prediction validator. Reply with only valid JSON, no markdown, no code fences."),
                 ChatMessage(role="user", content=prompt),
             ],
             max_tokens=128,
@@ -327,13 +327,27 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
                 "reason": f"OK ({s:.3f})" if passed else f"below threshold: {s:.3f} < {TEXT_CHECK_THRESHOLD}",
             }
 
-        # Weighted total (same as coherent_engine validator)
-        total_score = sum(checks[k]["score"] * WEIGHTS[k] for k in WEIGHTS)
+        # Prediction validation weights
+        pred_weights = {
+            "data_completeness": 0.30,
+            "logic_consistency": 0.30,
+            "confidence_calibration": 0.20,
+            "risk_coverage": 0.20,
+        }
+        pred_fix = {
+            "data_completeness": "补充球队数据引用，引用真实战绩、排名或统计",
+            "logic_consistency": "检查预测结论与依据是否自洽，消除矛盾",
+            "confidence_calibration": "降低过度自信表述，增加不确定性说明",
+            "risk_coverage": "补充风险因素分析，如伤病、赛程、临场变量",
+        }
+
+        # Weighted total
+        total_score = sum(checks[k]["score"] * pred_weights.get(k, 0.25) for k in check_names)
         total_score = round(max(0.0, min(1.0, total_score)), 4)
         overall_passed = total_score >= TEXT_PASS_THRESHOLD
 
         failed = [k for k, v in checks.items() if not v["passed"]]
-        fix_sugg = [FIX_SUGGESTIONS[k] for k in failed if k in FIX_SUGGESTIONS]
+        fix_sugg = [pred_fix[k] for k in failed if k in pred_fix]
         rc = RC.OK if overall_passed else failed_checks_to_rc(failed)
 
         return {
@@ -389,19 +403,36 @@ def _generate_with_llm(message: str, guidance: dict, revision: int) -> str | Non
 
         provider = create_provider(provider_cfg)
 
-        prompt = f"Task: {message}"
+        # 构建预测 prompt
+        from .football_data import build_prediction_context
+        data_ctx = build_prediction_context(message.split(" vs ")[0].strip() if " vs " in message else message,
+                                             message.split(" vs ")[1].strip() if " vs " in message else "")
+
+        prompt = f"""基于以下数据做比赛预测分析。
+
+{data_ctx}
+
+用户请求: {message}
+
+请输出：
+1. 预测结果（胜/平/负 + 比分区间）
+2. 置信度（高/中/低）
+3. 关键依据（3条）
+4. 风险因素（2条）
+5. 建议策略（保守/观望/可关注）"""
+
         if guidance:
-            prompt += f"\nGuidance from previous attempt: {json.dumps(guidance)}"
+            prompt += f"\n\n上一轮验证反馈: {json.dumps(guidance, ensure_ascii=False)}"
         if revision > 1:
-            prompt += f"\nThis is revision {revision}. Improve based on the guidance above."
+            prompt += f"\n这是第{revision}轮修正，请根据反馈改进预测质量。"
 
         req = ChatCompletionRequest(
             model="claude-haiku-4-5",
             messages=[
-                ChatMessage(role="system", content="你是一个有用的AI助手。请用中文简洁回答。"),
+                ChatMessage(role="system", content="你是 TaijiOS 世界杯预测分析师。基于真实数据做专业、客观的比赛预测。不要过度自信，必须提到风险因素。用中文回答。"),
                 ChatMessage(role="user", content=prompt),
             ],
-            max_tokens=512,
+            max_tokens=800,
             temperature=0.7,
         )
         resp = provider.complete(req)
@@ -563,6 +594,14 @@ def _check_rate_limit() -> bool:
 # ── Routes ───────────────────────────────────────────────────────
 
 _boot_time = time.time()
+
+
+@router.get("/v1/matches/upcoming")
+async def upcoming_matches():
+    """返回世界杯即将进行的比赛列表。"""
+    from .football_data import get_upcoming_matches
+    matches = get_upcoming_matches()
+    return {"matches": matches}
 
 
 @router.get("/v1/tasks/stats")

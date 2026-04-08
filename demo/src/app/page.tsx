@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { submitTask, streamTask, getTaskEvidence, getTaskStats, type StreamEvent, type TaskEvidence, type TaskStats } from "@/lib/api";
+import { submitTask, streamTask, getTaskEvidence, getTaskStats, getUpcomingMatches, type StreamEvent, type TaskEvidence, type TaskStats, type Match } from "@/lib/api";
 
 type Phase = "idle" | "submitting" | "streaming" | "done" | "error";
 
 const phaseLabel: Record<Phase, string> = {
-  idle: "", submitting: "\u63d0\u4ea4\u4e2d...", streaming: "\u6267\u884c\u4e2d", done: "\u5df2\u5b8c\u6210", error: "\u51fa\u9519",
+  idle: "", submitting: "分析中...", streaming: "预测中", done: "已完成", error: "出错",
 };
 
 const phaseColorClass: Record<Phase, string> = {
@@ -15,12 +15,12 @@ const phaseColorClass: Record<Phase, string> = {
 
 function evtLabel(type: string): string {
   const map: Record<string, string> = {
-    "task.started": "任务启动",
+    "task.started": "预测启动",
     "step.completed": "步骤完成",
     "validation.passed": "验证通过",
     "validation.failed": "验证失败",
-    "task.delivered": "任务交付",
-    "task.done": "任务结束",
+    "task.delivered": "预测交付",
+    "task.done": "预测结束",
     "task.dlq": "任务进入死信队列",
   };
   return map[type] || type;
@@ -39,17 +39,17 @@ function stepIcon(status: string) {
 }
 
 const checkLabel: Record<string, string> = {
-  character_consistency: "角色一致性",
-  style_consistency: "风格一致性",
-  shot_continuity: "连贯性",
-  subtitle_safety: "可读性",
+  data_completeness: "数据完整性",
+  logic_consistency: "逻辑一致性",
+  confidence_calibration: "置信校准",
+  risk_coverage: "风险覆盖",
 };
 
 const checkHint: Record<string, string> = {
-  character_consistency: "回答是否保持统一的身份和语气",
-  style_consistency: "语调和表达风格是否前后一致",
-  shot_continuity: "逻辑是否连贯，有无突兀跳转",
-  subtitle_safety: "内容是否清晰、易读、格式规范",
+  data_completeness: "是否引用了真实数据和统计依据",
+  logic_consistency: "预测结论与依据是否自洽",
+  confidence_calibration: "置信度是否合理，有无过度自信",
+  risk_coverage: "是否覆盖了关键风险因素",
 };
 
 export default function Home() {
@@ -62,16 +62,32 @@ export default function Home() {
   const cancelRef = useRef<(() => void) | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<TaskStats | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [selectedMatch, setSelectedMatch] = useState("");
 
   useEffect(() => {
-    const fetch = () => { getTaskStats().then(setStats).catch(() => {}); };
-    fetch();
-    const id = setInterval(fetch, 5000);
+    const fetchStats = () => { getTaskStats().then(setStats).catch(() => {}); };
+    fetchStats();
+    const id = setInterval(fetchStats, 5000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    getUpcomingMatches().then(setMatches).catch(() => {});
   }, []);
 
   const scrollToBottom = () => eventsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   const busy = phase === "submitting" || phase === "streaming";
+
+  const handleMatchSelect = (val: string) => {
+    setSelectedMatch(val);
+    if (val) {
+      const m = matches.find((m) => m.id === val);
+      if (m) setMessage(`预测 ${m.home} vs ${m.away} 的比赛结果`);
+    } else {
+      setMessage("");
+    }
+  };
 
   const handleSubmit = useCallback(async () => {
     if (!message.trim() || busy) return;
@@ -118,19 +134,37 @@ export default function Home() {
         </div>
       )}
 
-      <h1>太极OS 演示</h1>
-      <p className="page-subtitle">任务执行引擎 — 提交、观察、验证</p>
+      <h1>太极OS 世界杯预测</h1>
+      <p className="page-subtitle">AI 预测分析 — 数据驱动、多维验证、态势决策</p>
+
+      {matches.length > 0 && (
+        <div className="match-selector">
+          <select
+            value={selectedMatch}
+            onChange={(e) => handleMatchSelect(e.target.value)}
+            disabled={busy}
+            aria-label="选择比赛"
+          >
+            <option value="">选择一场比赛...</option>
+            {matches.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.home} vs {m.away} — {m.group}组 · {m.date}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="input-row">
         <input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="描述一个任务..."
+          placeholder="或手动输入: 预测 巴西 vs 阿根廷..."
           disabled={busy}
         />
         <button type="button" onClick={handleSubmit} disabled={!message.trim() || busy}>
-          执行
+          预测
         </button>
       </div>
 
@@ -164,7 +198,7 @@ export default function Home() {
         <div className="panel">
           <div className="panel-label panel-label-lg">验证摘要</div>
           {evidence.evidence.validator && (
-            <div className="validator-tag">验证器: coherent_engine — TaijiOS 内容质量验证引擎</div>
+            <div className="validator-tag">验证器: coherent_engine — TaijiOS 预测质量验证引擎</div>
           )}
           <div className="ev-grid">
             <div>状态: <span className={evidence.evidence.succeeded ? "c-green" : "c-red"}>
@@ -258,10 +292,10 @@ export default function Home() {
       <div className="engine-bar">
         <div className="panel-label">引擎状态</div>
         <div className="engine-grid">
-          <div className="engine-item"><span className="eng-dot c-green" />执行引擎</div>
-          <div className="engine-item"><span className="eng-dot c-green" />验证循环</div>
-          <div className="engine-item"><span className="eng-dot c-green" />自愈机制</div>
-          <div className="engine-item"><span className="eng-dot c-green" />证据追踪</div>
+          <div className="engine-item"><span className="eng-dot c-green" />数据采集</div>
+          <div className="engine-item"><span className="eng-dot c-green" />预测引擎</div>
+          <div className="engine-item"><span className="eng-dot c-green" />多维验证</div>
+          <div className="engine-item"><span className="eng-dot c-green" />态势决策</div>
         </div>
         {stats && stats.last_completed && (
           <div className="engine-last">最近完成: {stats.last_completed}</div>

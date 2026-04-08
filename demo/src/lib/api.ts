@@ -69,6 +69,23 @@ export interface TaskStats {
   task_api: string;
 }
 
+export interface Match {
+  id: string;
+  home: string;
+  away: string;
+  group: string;
+  stadium: string;
+  date: string;
+  status: string;
+}
+
+export async function getUpcomingMatches(): Promise<Match[]> {
+  const res = await fetch(`${API_BASE}/v1/matches/upcoming`);
+  if (!res.ok) throw new Error(`Matches failed: ${res.status}`);
+  const data = await res.json();
+  return data.matches || [];
+}
+
 export async function getTaskStats(): Promise<TaskStats> {
   const res = await fetch(`${API_BASE}/v1/tasks/stats`);
   if (!res.ok) throw new Error(`Stats failed: ${res.status}`);
