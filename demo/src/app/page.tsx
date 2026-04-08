@@ -201,6 +201,35 @@ export default function Home() {
             </div>
           )}
 
+          {evidence.hexagram && (
+            <div className="trace-section">
+              <div className="panel-label">卦象决策</div>
+              <div className="hex-header">
+                <span className="hex-name">{evidence.hexagram.name}</span>
+                <span className={`hex-risk ${evidence.hexagram.risk === "低风险" ? "c-green" : evidence.hexagram.risk === "中风险" ? "c-yellow" : "c-red"}`}>{evidence.hexagram.risk}</span>
+                <span className="hex-bits">{evidence.hexagram.bits}</span>
+              </div>
+              <div className="hex-meaning">{evidence.hexagram.meaning}</div>
+              <div className="hex-lines">
+                {Object.entries(evidence.hexagram.lines).map(([name, score]) => (
+                  <div key={name} className="hex-line-row">
+                    <span className={score >= 0.6 ? "c-green" : score <= 0.4 ? "c-red" : "c-yellow"}>{score >= 0.6 ? "阳" : score <= 0.4 ? "阴" : "变"}</span>
+                    <span className="hex-line-name">{name}</span>
+                    <span className="c-dim">{score}</span>
+                  </div>
+                ))}
+              </div>
+              {evidence.hexagram.actions.length > 0 && (
+                <div className="hex-actions">
+                  <span className="c-dim">推荐动作:</span>
+                  {evidence.hexagram.actions.map((a, i) => (
+                    <span key={i} className="hex-action-tag">{a}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {evidence.trace?.steps && (
             <div className="trace-section">
               <div className="panel-label">执行轨迹</div>

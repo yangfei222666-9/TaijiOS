@@ -45,6 +45,14 @@ export interface TaskEvidence {
     checks: Record<string, { score: number; passed: boolean; reason: string }> | null;
     fix_suggestions: string[];
   };
+  hexagram: {
+    name: string;
+    meaning: string;
+    risk: string;
+    actions: string[];
+    bits: string;
+    lines: Record<string, number>;
+  } | null;
   events: Array<{ ts: number; type: string; data: Record<string, unknown> }>;
 }
 

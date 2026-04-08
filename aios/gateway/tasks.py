@@ -37,6 +37,91 @@ log = logging.getLogger("gateway.tasks")
 router = APIRouter(tags=["tasks"])
 
 
+# ── 64卦决策系统（内联核心逻辑）─────────────────────────────────
+
+def _discretize(score: float) -> int:
+    """将 0-1 分数离散化为阴(0)/阳(1)。临界带 0.4-0.6 按 >=0.5 判阳。"""
+    if score >= 0.6:
+        return 1
+    if score <= 0.4:
+        return 0
+    return 1 if score >= 0.5 else 0
+
+
+# 常用卦象映射（精选 20 卦覆盖 demo 场景，其余走 fallback）
+_HEXAGRAM_TABLE: dict[str, dict] = {
+    "111111": {"name": "乾卦", "meaning": "刚健中正，全维度优秀", "risk": "低风险", "actions": ["maximize_throughput", "maintain_peak_performance", "enable_aggressive_caching"]},
+    "000000": {"name": "坤卦", "meaning": "厚德载物，稳定可靠", "risk": "低风险", "actions": ["maintain_stability", "enable_redundancy", "monitor_health_metrics"]},
+    "010101": {"name": "既济卦", "meaning": "功成，连续成功", "risk": "低风险", "actions": ["share_best_practices", "maintain_excellence", "mentor_junior_agents"]},
+    "000111": {"name": "泰卦", "meaning": "通泰顺畅，系统和谐", "risk": "低风险", "actions": ["maintain_harmony", "optimize_collaboration", "share_resources"]},
+    "101010": {"name": "未济卦", "meaning": "重整待续，需要干预", "risk": "高风险", "actions": ["trigger_recovery_mode", "analyze_failure_patterns", "apply_historical_fixes"]},
+    "111000": {"name": "否卦", "meaning": "闭塞不通，系统阻滞", "risk": "高风险", "actions": ["identify_bottlenecks", "clear_queue", "restart_stalled_tasks"]},
+    "010110": {"name": "困卦", "meaning": "困境，资源耗尽", "risk": "严重风险", "actions": ["release_resources", "defer_non_critical_tasks", "request_resource_allocation"]},
+    "001010": {"name": "蹇卦", "meaning": "前途艰难，系统阻塞", "risk": "严重风险", "actions": ["suspend_current_task", "check_api_health", "retry_with_exponential_backoff"]},
+    "011110": {"name": "大过卦", "meaning": "过度负载，系统超限", "risk": "严重风险", "actions": ["reduce_load", "enable_rate_limiting", "decrease_concurrency"]},
+    "010000": {"name": "屯卦", "meaning": "草创维艰，正在初始化", "risk": "中风险", "actions": ["extend_timeout", "enable_debug_logging", "allow_slow_start"]},
+    "000010": {"name": "蒙卦", "meaning": "启蒙学习，正在加载", "risk": "中风险", "actions": ["warm_up_model", "check_dependencies", "validate_initialization"]},
+    "001011": {"name": "渐卦", "meaning": "循序渐进，稳步提升", "risk": "低风险", "actions": ["monitor_progress", "optimize_cache", "gradual_scale_up"]},
+    "110001": {"name": "益卦", "meaning": "增益扩展，能力提升", "risk": "低风险", "actions": ["expand_capacity", "increase_throughput", "invest_in_growth"]},
+    "000001": {"name": "复卦", "meaning": "复苏，从失败中恢复", "risk": "中风险", "actions": ["monitor_recovery_progress", "validate_fixes", "document_lessons_learned"]},
+    "010010": {"name": "解卦", "meaning": "解除困境，问题已缓解", "risk": "中风险", "actions": ["verify_resolution", "resume_normal_operations", "prevent_recurrence"]},
+    "001110": {"name": "恒卦", "meaning": "持久，长期稳定运行", "risk": "低风险", "actions": ["maintain_steady_state", "optimize_for_longevity", "enable_predictive_maintenance"]},
+    "011111": {"name": "大壮卦", "meaning": "强壮有力", "risk": "低风险", "actions": ["leverage_strength", "push_forward", "seize_opportunity"]},
+    "111110": {"name": "夬卦", "meaning": "决断果断", "risk": "中风险", "actions": ["make_decision", "take_action", "resolve_quickly"]},
+    "110011": {"name": "革卦", "meaning": "变革革新", "risk": "中风险", "actions": ["implement_change", "embrace_innovation", "refactor_approach"]},
+    "011000": {"name": "萃卦", "meaning": "聚集汇合", "risk": "低风险", "actions": ["gather_resources", "consolidate_efforts", "strengthen_bonds"]},
+}
+
+
+def _map_hexagram(bits: str) -> dict:
+    """将 6-bit 映射到卦象，无精确匹配时按阳爻数量 fallback。"""
+    if bits in _HEXAGRAM_TABLE:
+        return _HEXAGRAM_TABLE[bits]
+    yang = bits.count("1")
+    if yang >= 5:
+        return _HEXAGRAM_TABLE["111111"]
+    if yang >= 4:
+        return _HEXAGRAM_TABLE["010101"]
+    if yang == 3:
+        return _HEXAGRAM_TABLE["001011"]
+    if yang == 2:
+        return _HEXAGRAM_TABLE["101010"]
+    if yang == 1:
+        return _HEXAGRAM_TABLE["001010"]
+    return _HEXAGRAM_TABLE["000000"]
+
+
+def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
+    """从 coherent_engine 四维检查 + pipeline 运行时指标计算任务卦象。"""
+    checks = scores.get("checks", {})
+    dims = [
+        1.0 if llm_ok else 0.2,                                                          # 初爻：基础设施
+        (checks.get("character_consistency", {}).get("score", 0.5)
+         + checks.get("style_consistency", {}).get("score", 0.5)) / 2,                   # 二爻：执行质量
+        checks.get("shot_continuity", {}).get("score", 0.5),                              # 三爻：学习适应
+        checks.get("subtitle_safety", {}).get("score", 0.5),                              # 四爻：内容治理
+        {1: 1.0, 2: 0.5}.get(attempt, 0.2),                                              # 五爻：协作（自愈轮次）
+        scores.get("score", 0.5),                                                         # 上爻：总体治理
+    ]
+    bits = "".join(str(_discretize(d)) for d in dims)
+    hexagram = _map_hexagram(bits)
+    return {
+        "name": hexagram["name"],
+        "meaning": hexagram["meaning"],
+        "risk": hexagram["risk"],
+        "actions": hexagram["actions"][:3],
+        "bits": bits,
+        "lines": {
+            "初爻·基础设施": round(dims[0], 2),
+            "二爻·执行质量": round(dims[1], 2),
+            "三爻·学习适应": round(dims[2], 2),
+            "四爻·内容治理": round(dims[3], 2),
+            "五爻·协作": round(dims[4], 2),
+            "上爻·治理": round(dims[5], 2),
+        },
+    }
+
+
 # ── Data structures ──────────────────────────────────────────────
 
 @dataclass
@@ -59,6 +144,7 @@ class TaskRecord:
     validation_checks: dict | None = None
     fix_suggestions: list = field(default_factory=list)
     validator_name: str = ""
+    hexagram: dict | None = None
 
 
 # ── In-memory store ──────────────────────────────────────────────
@@ -364,12 +450,18 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
         step_val.output = scores
         step_val.ended_at = time.time()
 
+        # 计算任务卦象
+        llm_ok = llm_content is not None
+        hexagram_result = _calculate_task_hexagram(scores, attempt, llm_ok)
+        record.hexagram = hexagram_result
+
         if scores["passed"]:
             step_val.status = "completed"
             record.score = scores["score"]
             record.reason_code = "OK"
             bus.publish("validation.passed", {
                 "task_id": record.task_id, "score": scores["score"], "rev": rev,
+                "hexagram": hexagram_result["name"],
             })
             break
         else:
@@ -382,8 +474,11 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
             bus.publish("validation.failed", {
                 "task_id": record.task_id, "score": scores["score"],
                 "failed_checks": scores["failed_checks"], "rev": rev,
+                "hexagram": hexagram_result["name"],
             })
+            # guidance = fix_suggestions + 卦象推荐动作
             guidance = _guidance_from_failures(scores["failed_checks"])
+            guidance["hexagram_actions"] = hexagram_result["actions"]
 
     # Store coherent_engine validation details from last attempt
     if last_scores:
@@ -592,5 +687,6 @@ async def get_evidence(task_id: str):
             "checks": record.validation_checks,
             "fix_suggestions": record.fix_suggestions,
         },
+        "hexagram": record.hexagram,
         "events": record.events,
     }

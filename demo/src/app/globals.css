@@ -116,6 +116,21 @@ html,body{height:100%;font-family:var(--font-sans);background:var(--bg);color:va
 }
 .fix-row:last-child{border-bottom:none}
 
+/* Hexagram display */
+.hex-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.hex-name{font-size:16px;font-weight:700;color:var(--accent)}
+.hex-risk{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid currentColor}
+.hex-bits{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);letter-spacing:2px}
+.hex-meaning{font-size:13px;color:var(--text-dim);margin-bottom:10px}
+.hex-lines{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.hex-line-row{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px}
+.hex-line-name{min-width:120px;color:var(--text)}
+.hex-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
+.hex-action-tag{
+  padding:2px 8px;border-radius:4px;font-family:var(--font-mono);font-size:11px;
+  background:rgba(34,211,238,0.08);border:1px solid var(--border);color:var(--text-dim);
+}
+
 /* Engine capability bar */
 .engine-bar{
   margin-top:32px;padding:16px 20px;
