@@ -43,3 +43,5 @@ desktop.ini
 *.npy
 *.pth
 *.bin
+
+.vercel

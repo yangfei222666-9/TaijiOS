@@ -38,6 +38,20 @@ function stepIcon(status: string) {
   return "-";
 }
 
+const checkLabel: Record<string, string> = {
+  character_consistency: "角色一致性",
+  style_consistency: "风格一致性",
+  shot_continuity: "连贯性",
+  subtitle_safety: "可读性",
+};
+
+const checkHint: Record<string, string> = {
+  character_consistency: "回答是否保持统一的身份和语气",
+  style_consistency: "语调和表达风格是否前后一致",
+  shot_continuity: "逻辑是否连贯，有无突兀跳转",
+  subtitle_safety: "内容是否清晰、易读、格式规范",
+};
+
 export default function Home() {
   const [message, setMessage] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -169,9 +183,9 @@ export default function Home() {
                 {Object.entries(evidence.evidence.checks).map(([name, check]) => (
                   <div key={name} className="check-row">
                     <span className={check.passed ? "c-green" : "c-red"}>{check.passed ? "+" : "x"}</span>
-                    <span className="check-name">{name}</span>
+                    <span className="check-name">{checkLabel[name] || name}</span>
                     <span className="c-yellow">{check.score}</span>
-                    <span className="c-dim">{check.reason}</span>
+                    <span className="c-dim">{checkHint[name] || ""}</span>
                   </div>
                 ))}
               </div>
