@@ -13,7 +13,18 @@ const phaseColorClass: Record<Phase, string> = {
   idle: "c-dim", submitting: "c-yellow", streaming: "c-accent", done: "c-green", error: "c-red",
 };
 
-function evtColorClass(type: string) {
+function evtLabel(type: string): string {
+  const map: Record<string, string> = {
+    "task.started": "任务启动",
+    "step.completed": "步骤完成",
+    "validation.passed": "验证通过",
+    "validation.failed": "验证失败",
+    "task.delivered": "任务交付",
+    "task.done": "任务结束",
+    "task.dlq": "任务进入死信队列",
+  };
+  return map[type] || type;
+}
   if (type.includes("failed")) return "c-red";
   if (type.includes("passed") || type.includes("delivered")) return "c-green";
   return "c-text";
@@ -78,6 +89,10 @@ export default function Home() {
           <span className="sys-dot" />
           <span>系统运行中</span>
           <span className="sys-sep" />
+          <span>Gateway <b className="c-green">{stats.gateway}</b></span>
+          <span className="sys-sep" />
+          <span>Task API <b className="c-green">{stats.task_api}</b></span>
+          <span className="sys-sep" />
           <span>已完成 <b>{stats.succeeded}</b></span>
           <span className="sys-sep" />
           <span>自愈 <b>{stats.self_healed}</b></span>
@@ -119,8 +134,10 @@ export default function Home() {
           {events.map((evt, i) => (
             <div key={i} className="evt-row">
               <span className="evt-ts">{new Date(evt.timestamp * 1000).toLocaleTimeString()}</span>
-              <span className={evtColorClass(evt.type)}>{evt.type}</span>
-              {evt.score !== undefined && <span className="evt-score">score={String(evt.score)}</span>}
+              <span className={evtColorClass(evt.type)}>{evtLabel(evt.type)}</span>
+              {evt.score !== undefined && <span className="evt-score">评分={String(evt.score)}</span>}
+              {evt.rev !== undefined && <span className="c-dim">第{String(evt.rev)}轮</span>}
+              {evt.failed_checks && (evt.failed_checks as string[]).length > 0 && <span className="c-red">{(evt.failed_checks as string[]).join(", ")}</span>}
             </div>
           ))}
           <div ref={eventsEndRef} />
@@ -163,6 +180,20 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {/* Engine capability indicators */}
+      <div className="engine-bar">
+        <div className="panel-label">引擎状态</div>
+        <div className="engine-grid">
+          <div className="engine-item"><span className="eng-dot c-green" />执行引擎</div>
+          <div className="engine-item"><span className="eng-dot c-green" />验证循环</div>
+          <div className="engine-item"><span className="eng-dot c-green" />自愈机制</div>
+          <div className="engine-item"><span className="eng-dot c-green" />证据追踪</div>
+        </div>
+        {stats && stats.last_completed && (
+          <div className="engine-last">最近完成: {stats.last_completed}</div>
+        )}
+      </div>
     </div>
   );
 }

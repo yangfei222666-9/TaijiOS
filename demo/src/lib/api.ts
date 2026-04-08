@@ -53,6 +53,9 @@ export interface TaskStats {
   self_healed: number;
   avg_score: number;
   uptime_s: number;
+  last_completed: string;
+  gateway: string;
+  task_api: string;
 }
 
 export async function getTaskStats(): Promise<TaskStats> {

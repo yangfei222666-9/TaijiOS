@@ -93,3 +93,16 @@ html,body{height:100%;font-family:var(--font-sans);background:var(--bg);color:va
 }
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* Engine capability bar */
+.engine-bar{
+  margin-top:32px;padding:16px 20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  font-size:12px;
+}
+.engine-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:8px;
+}
+.engine-item{display:flex;align-items:center;gap:6px;color:var(--text-dim)}
+.eng-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.engine-last{margin-top:10px;color:var(--text-dim);font-size:11px;font-family:var(--font-mono)}

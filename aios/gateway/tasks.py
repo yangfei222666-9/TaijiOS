@@ -365,6 +365,8 @@ async def task_stats():
     failed = sum(1 for r in records if r.status == "failed")
     healed = sum(1 for r in records if r.self_healed)
     avg_score = round(sum(r.score for r in records if r.score > 0) / max(1, succeeded + failed), 2)
+    done = [r for r in records if r.status in ("succeeded", "failed")]
+    last_completed = max((r.updated_at for r in done), default="") if done else ""
     return {
         "total": total,
         "running": running,
@@ -373,6 +375,9 @@ async def task_stats():
         "self_healed": healed,
         "avg_score": avg_score,
         "uptime_s": round(time.time() - _boot_time, 1),
+        "last_completed": last_completed,
+        "gateway": "online",
+        "task_api": "online",
     }
 
 
