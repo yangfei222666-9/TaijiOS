@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pytest pytest-asyncio pytest-cov numpy opencv-python-headless edge-tts redis
-          pip install -e . 2>/dev/null || true
+          pip install -e .
       - name: Run tests
         run: python -m pytest coherent_engine/tests/ -q --tb=short
       - name: Coverage check
