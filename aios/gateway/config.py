@@ -38,6 +38,8 @@ class GatewayConfig:
     cors_origins: List[str] = field(default_factory=lambda: [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ])
     default_provider: str = "ollama"
     default_model: str = "qwen2.5:3b"

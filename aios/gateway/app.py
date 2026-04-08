@@ -28,6 +28,7 @@ from .errors import (
 from .reason_codes import GRC
 from .policy import enforce_policy
 from .audit import audit_request
+from .tasks import router as tasks_router
 
 import threading
 from collections import defaultdict
@@ -62,6 +63,7 @@ app.add_middleware(
 )
 
 register_error_handlers(app)
+app.include_router(tasks_router)
 
 _start_time = time.time()
 _router = ProviderRouter(cfg)
