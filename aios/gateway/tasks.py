@@ -489,7 +489,7 @@ async def task_stats():
 @router.post("/v1/tasks")
 async def submit_task(req: TaskSubmitRequest):
     if not _check_rate_limit():
-        raise HTTPException(status_code=429, detail="Rate limit exceeded: max 5 tasks per minute")
+        raise HTTPException(status_code=429, detail="请求过于频繁，每分钟最多提交 5 个任务")
     task_id = _gen_task_id()
     now = _utc_now()
     record = TaskRecord(
