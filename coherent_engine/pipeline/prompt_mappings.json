@@ -1,0 +1,49 @@
+{
+  "camera_framing": {
+    "close":   "close-up shot",
+    "medium":  "medium shot",
+    "wide":    "wide shot",
+    "extreme": "extreme close-up"
+  },
+  "camera_angle": {
+    "eye":  "eye level",
+    "low":  "low angle",
+    "high": "high angle",
+    "bird": "bird's eye view"
+  },
+  "camera_movement": {
+    "static": "static camera",
+    "pan":    "camera pan",
+    "tilt":   "camera tilt",
+    "zoom":   "zoom in",
+    "dolly":  "dolly shot"
+  },
+  "brand_rules": {
+    "brand.example.v1": {
+      "style_prompt":    "clean minimalist style, brand consistent",
+      "positive_extra":  "professional lighting, sharp focus",
+      "negative_extra":  "watermark, logo, text overlay"
+    }
+  },
+  "character": {
+    "char.xiaojiu.v1": {
+      "positive_extra": "consistent character appearance, same outfit",
+      "negative_extra": "character inconsistency, different face"
+    }
+  },
+  "scene_tag_map": {
+    "室内": "indoor",
+    "室外": "outdoor",
+    "白天": "daytime, natural lighting",
+    "夜景": "nighttime, artificial lighting",
+    "客厅": "living room",
+    "办公室": "office",
+    "街道": "street"
+  },
+  "defaults": {
+    "negative_prompt_base": "blurry, low quality, distorted, deformed, ugly, bad anatomy",
+    "cfg":   7.0,
+    "steps": 20,
+    "seed":  -1
+  }
+}
