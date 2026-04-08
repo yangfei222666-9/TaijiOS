@@ -454,7 +454,7 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
     bus.publish("task.started", {"task_id": record.task_id})
 
     # ── Step 0: 构建资料卡，检查完整度 ──
-    from .football_data import build_data_card, COMPLETENESS_THRESHOLD, _card_to_text
+    from .football_data import build_data_card, COMPLETENESS_THRESHOLD
 
     parts = record.message.split(" vs ")
     home_raw = parts[0].strip() if len(parts) >= 2 else record.message
@@ -709,7 +709,14 @@ async def submit_task(req: TaskSubmitRequest):
     bus = EventBus()
 
     def _run():
-        _run_pipeline(record, bus)
+        try:
+            _run_pipeline(record, bus)
+        except Exception as e:
+            log.exception(f"Pipeline crashed for {task_id}: {e}")
+            record.status = "failed"
+            record.phase = "failed"
+            record.reason_code = f"pipeline_crash: {e}"
+            record.updated_at = _utc_now()
         with _lock:
             _store[task_id] = record
 
