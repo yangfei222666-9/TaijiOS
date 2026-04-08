@@ -155,7 +155,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
             f"Rate the following AI response on a scale of 0.0 to 1.0.\n"
             f"Task: {message}\n"
             f"Response: {content}\n\n"
-            f"Score criteria: relevance, completeness, clarity.\n"
+            f"Score criteria: relevance, completeness, clarity. The response language (Chinese or English) does not affect the score.\n"
             f"Reply with ONLY a JSON object: {{\"score\": 0.XX, \"passed\": true/false, \"failed_checks\": [], \"reason_code\": \"OK\"}}\n"
             f"passed = true if score >= 0.7. If failed, set failed_checks to relevant issues and reason_code to a short code."
         )
@@ -163,7 +163,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         req = ChatCompletionRequest(
             model=provider_cfg.models[0] if provider_cfg.models else "claude-haiku-4-5",
             messages=[
-                ChatMessage(role="system", content="You are a strict quality evaluator. Reply with only valid JSON, no markdown."),
+                ChatMessage(role="system", content="You are a quality evaluator. Reply with only valid JSON, no markdown, no code fences."),
                 ChatMessage(role="user", content=prompt),
             ],
             max_tokens=128,
