@@ -94,14 +94,19 @@ def _map_hexagram(bits: str) -> dict:
 def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
     """从 coherent_engine 四维检查 + pipeline 运行时指标计算任务卦象。"""
     checks = scores.get("checks", {})
+    cc = checks.get("character_consistency", {}).get("score", 0.5)
+    sc = checks.get("style_consistency", {}).get("score", 0.5)
+    cont = checks.get("shot_continuity", {}).get("score", 0.5)
+    sub = checks.get("subtitle_safety", {}).get("score", 0.5)
+    total = scores.get("score", 0.5)
+
     dims = [
-        1.0 if llm_ok else 0.2,                                                          # 初爻：基础设施
-        (checks.get("character_consistency", {}).get("score", 0.5)
-         + checks.get("style_consistency", {}).get("score", 0.5)) / 2,                   # 二爻：执行质量
-        checks.get("shot_continuity", {}).get("score", 0.5),                              # 三爻：学习适应
-        checks.get("subtitle_safety", {}).get("score", 0.5),                              # 四爻：内容治理
-        {1: 1.0, 2: 0.5}.get(attempt, 0.2),                                              # 五爻：协作（自愈轮次）
-        scores.get("score", 0.5),                                                         # 上爻：总体治理
+        total * (1.0 if llm_ok else 0.3),                                                  # 初爻：基础设施 × 总分
+        cc,                                                                                  # 二爻：角色一致性
+        sc,                                                                                  # 三爻：风格一致性
+        cont,                                                                                # 四爻：连贯性
+        sub * ({1: 1.0, 2: 0.8}.get(attempt, 0.6)),                                         # 五爻：可读性 × 自愈衰减
+        (cc + sc + cont + sub) / 4.0 * (0.9 if scores.get("passed") else 0.5),              # 上爻：综合治理
     ]
     bits = "".join(str(_discretize(d)) for d in dims)
     hexagram = _map_hexagram(bits)
@@ -113,11 +118,11 @@ def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
         "bits": bits,
         "lines": {
             "初爻·基础设施": round(dims[0], 2),
-            "二爻·执行质量": round(dims[1], 2),
-            "三爻·学习适应": round(dims[2], 2),
-            "四爻·内容治理": round(dims[3], 2),
-            "五爻·协作": round(dims[4], 2),
-            "上爻·治理": round(dims[5], 2),
+            "二爻·角色一致": round(dims[1], 2),
+            "三爻·风格一致": round(dims[2], 2),
+            "四爻·连贯性": round(dims[3], 2),
+            "五爻·可读性": round(dims[4], 2),
+            "上爻·综合治理": round(dims[5], 2),
         },
     }
 
