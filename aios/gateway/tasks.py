@@ -23,7 +23,12 @@ from pydantic import BaseModel, Field
 from .streaming import sse_response
 
 from coherent_engine.pipeline.reason_codes import RC, failed_checks_to_rc
-from coherent_engine.modules.validator import WEIGHTS, PASS_THRESHOLD, FIX_SUGGESTIONS
+from coherent_engine.modules.validator import WEIGHTS, FIX_SUGGESTIONS
+
+# 文本创意任务使用较宽阈值 (0.70)；高风险/结构化任务可提高到 0.85
+# coherent_engine 原始视觉验证阈值为 0.85，文本场景不适用
+TEXT_PASS_THRESHOLD = 0.70
+TEXT_CHECK_THRESHOLD = 0.65
 
 import logging
 
@@ -127,15 +132,15 @@ def _validate(data: dict, attempt: int, content: str = "", message: str = "") ->
         return result
     # Fallback: simulated coherent_engine-format result
     score = 0.35 + (attempt - 1) * 0.55
-    passed = score >= PASS_THRESHOLD
+    passed = score >= TEXT_PASS_THRESHOLD
     checks = {}
     for name, weight in WEIGHTS.items():
         s = score + (0.05 if name == "subtitle_safety" else 0.0)
         s = min(1.0, s)
         checks[name] = {
             "score": round(s, 4),
-            "passed": s >= 0.80,
-            "reason": f"OK ({s:.3f})" if s >= 0.80 else f"simulated: {s:.3f} < 0.80",
+            "passed": s >= TEXT_CHECK_THRESHOLD,
+            "reason": f"OK ({s:.3f})" if s >= TEXT_CHECK_THRESHOLD else f"simulated: {s:.3f} < {TEXT_CHECK_THRESHOLD}",
         }
     failed = [k for k, v in checks.items() if not v["passed"]]
     fix_sugg = [FIX_SUGGESTIONS[k] for k in failed if k in FIX_SUGGESTIONS]
@@ -210,11 +215,11 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         for name in check_names:
             s = float(scores_raw.get(name, 0.0))
             s = max(0.0, min(1.0, s))
-            passed = s >= 0.80
+            passed = s >= TEXT_CHECK_THRESHOLD
             checks[name] = {
                 "score": round(s, 4),
                 "passed": passed,
-                "reason": f"OK ({s:.3f})" if passed else f"below threshold: {s:.3f} < 0.80",
+                "reason": f"OK ({s:.3f})" if passed else f"below threshold: {s:.3f} < {TEXT_CHECK_THRESHOLD}",
             }
 
         # Weighted total (same as coherent_engine validator)
