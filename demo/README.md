@@ -9,7 +9,7 @@ Submit a task, watch it execute in real-time via SSE, and inspect the evidence t
 - Frontend: <https://demo-one-wheat-95.vercel.app>
 - Backend API: <https://taijios-production.up.railway.app>
 
-This is a demo environment — no real LLM, no sensitive data, no auth.
+This demo runs real LLM-backed task execution (DeepSeek) with validation, guided retry, and self-heal. Not simulated data.
 
 ## What this is
 
