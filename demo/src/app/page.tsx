@@ -25,6 +25,8 @@ function evtLabel(type: string): string {
   };
   return map[type] || type;
 }
+
+function evtColorClass(type: string) {
   if (type.includes("failed")) return "c-red";
   if (type.includes("passed") || type.includes("delivered")) return "c-green";
   return "c-text";
@@ -137,7 +139,7 @@ export default function Home() {
               <span className={evtColorClass(evt.type)}>{evtLabel(evt.type)}</span>
               {evt.score !== undefined && <span className="evt-score">评分={String(evt.score)}</span>}
               {evt.rev !== undefined && <span className="c-dim">第{String(evt.rev)}轮</span>}
-              {evt.failed_checks && (evt.failed_checks as string[]).length > 0 && <span className="c-red">{(evt.failed_checks as string[]).join(", ")}</span>}
+              {Array.isArray(evt.failed_checks) && evt.failed_checks.length > 0 && <span className="c-red">{(evt.failed_checks as string[]).join(", ")}</span>}
             </div>
           ))}
           <div ref={eventsEndRef} />
