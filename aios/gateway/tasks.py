@@ -225,7 +225,7 @@ def _validate_with_llm(content: str, message: str) -> dict | None:
         # Weighted total (same as coherent_engine validator)
         total_score = sum(checks[k]["score"] * WEIGHTS[k] for k in WEIGHTS)
         total_score = round(max(0.0, min(1.0, total_score)), 4)
-        overall_passed = total_score >= PASS_THRESHOLD
+        overall_passed = total_score >= TEXT_PASS_THRESHOLD
 
         failed = [k for k, v in checks.items() if not v["passed"]]
         fix_sugg = [FIX_SUGGESTIONS[k] for k in failed if k in FIX_SUGGESTIONS]
