@@ -40,12 +40,12 @@ router = APIRouter(tags=["tasks"])
 # ── 64卦决策系统（内联核心逻辑）─────────────────────────────────
 
 def _discretize(score: float) -> int:
-    """将 0-1 分数离散化为阴(0)/阳(1)。临界带 0.4-0.6 按 >=0.5 判阳。"""
-    if score >= 0.6:
+    """将 0-1 分数离散化为阴(0)/阳(1)。文本任务场景阈值收紧，让卦象有区分度。"""
+    if score >= 0.85:
         return 1
-    if score <= 0.4:
+    if score <= 0.65:
         return 0
-    return 1 if score >= 0.5 else 0
+    return 1 if score >= 0.75 else 0
 
 
 # 常用卦象映射（精选 20 卦覆盖 demo 场景，其余走 fallback）
