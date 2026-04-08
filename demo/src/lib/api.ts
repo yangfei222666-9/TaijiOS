@@ -83,7 +83,15 @@ export async function getUpcomingMatches(): Promise<Match[]> {
   const res = await fetch(`${API_BASE}/v1/matches/upcoming`);
   if (!res.ok) throw new Error(`Matches failed: ${res.status}`);
   const data = await res.json();
-  return data.matches || [];
+  return (data.matches || []).map((m: Record<string, unknown>) => ({
+    id: String(m.id ?? m.match_number ?? ""),
+    home: (m.home as string) ?? (m.home_team as string) ?? "",
+    away: (m.away as string) ?? (m.away_team as string) ?? "",
+    group: (m.group as string) ?? (m.group_name as string) ?? "",
+    stadium: (m.stadium as string) ?? "",
+    date: (m.date as string) ?? (m.kickoff_utc as string)?.slice(0, 10) ?? "",
+    status: (m.status as string) ?? "scheduled",
+  }));
 }
 
 export async function getTaskStats(): Promise<TaskStats> {
