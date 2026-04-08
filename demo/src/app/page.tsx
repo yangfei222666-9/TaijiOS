@@ -169,6 +169,25 @@ export default function Home() {
         </button>
       </div>
 
+      <div className="quick-picks">
+        {[
+          "巴西 vs 阿根廷",
+          "法国 vs 英格兰",
+          "西班牙 vs 德国",
+          "美国 vs 墨西哥",
+          "葡萄牙 vs 荷兰",
+          "意大利 vs 摩洛哥",
+        ].map((m) => (
+          <button
+            key={m}
+            type="button"
+            className="quick-pick"
+            disabled={busy}
+            onClick={() => { setMessage(`预测 ${m} 的比赛结果`); }}
+          >{m}</button>
+        ))}
+      </div>
+
       {phase !== "idle" && (
         <div className="status-bar">
           <span className={`status-dot ${phaseColorClass[phase]}${phase === "streaming" ? " pulse" : ""}`} />

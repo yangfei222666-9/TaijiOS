@@ -144,6 +144,17 @@ html,body{height:100%;font-family:var(--font-sans);background:var(--bg);color:va
   background:rgba(34,211,238,0.08);border:1px solid var(--border);color:var(--text-dim);
 }
 
+/* Quick pick templates */
+.quick-picks{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.quick-pick{
+  padding:6px 12px;font-size:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;color:var(--text-dim);cursor:pointer;
+  font-family:var(--font-sans);transition:all 0.2s;
+}
+.quick-pick:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.quick-pick:disabled{opacity:0.4;cursor:default}
+
 /* Data card */
 .card-checks{margin-top:8px}
 .card-missing{margin-top:6px}
