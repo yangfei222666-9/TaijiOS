@@ -4,12 +4,19 @@ Single-page experience shell for the TaijiOS task execution engine.
 
 Submit a task, watch it execute in real-time via SSE, and inspect the evidence trace.
 
+## Live demo
+
+- Frontend: <https://demo-one-wheat-95.vercel.app>
+- Backend API: <https://taijios-production.up.railway.app>
+
+This is a demo environment — no real LLM, no sensitive data, no auth.
+
 ## What this is
 
 A minimal demo that connects to 4 backend endpoints:
 
 | Method | Endpoint | Purpose |
-|--------|----------|---------|
+| ------ | -------- | ------- |
 | POST | `/v1/tasks` | Submit a task |
 | GET | `/v1/tasks/{id}` | Query status |
 | GET | `/v1/tasks/{id}/stream` | SSE live updates |
@@ -47,7 +54,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+Open <http://localhost:3000>
 
 ## Deploy to public URL
 
