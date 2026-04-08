@@ -114,7 +114,12 @@ class RunTrace:
         }
 
 
-def _validate(data: dict, attempt: int) -> dict:
+def _validate(data: dict, attempt: int, content: str = "", message: str = "") -> dict:
+    """Validate generated content. Uses LLM scoring if available, else simulated."""
+    result = _validate_with_llm(content, message)
+    if result is not None:
+        return result
+    # Fallback: simulated
     score = 0.35 + (attempt - 1) * 0.55
     passed = score >= 0.80
     failed_checks = []
@@ -126,6 +131,62 @@ def _validate(data: dict, attempt: int) -> dict:
         "failed_checks": failed_checks,
         "reason_code": "OK" if passed else "coherent.validator.style_consistency",
     }
+
+
+def _validate_with_llm(content: str, message: str) -> dict | None:
+    """Use LLM to score generated content quality. Returns score dict or None."""
+    if not content or not message:
+        return None
+    try:
+        from .config import load_config
+        from .router import ProviderRouter
+        from .providers import create_provider
+        from .schemas import ChatCompletionRequest, ChatMessage
+
+        cfg = load_config()
+        router = ProviderRouter(cfg)
+        provider_cfg = router.select("deepseek-chat")
+        if provider_cfg is None:
+            return None
+
+        provider = create_provider(provider_cfg)
+
+        prompt = (
+            f"Rate the following AI response on a scale of 0.0 to 1.0.\n"
+            f"Task: {message}\n"
+            f"Response: {content}\n\n"
+            f"Score criteria: relevance, completeness, clarity.\n"
+            f"Reply with ONLY a JSON object: {{\"score\": 0.XX, \"passed\": true/false, \"failed_checks\": [], \"reason_code\": \"OK\"}}\n"
+            f"passed = true if score >= 0.7. If failed, set failed_checks to relevant issues and reason_code to a short code."
+        )
+
+        req = ChatCompletionRequest(
+            model=provider_cfg.models[0] if provider_cfg.models else "deepseek-chat",
+            messages=[
+                ChatMessage(role="system", content="You are a strict quality evaluator. Reply with only valid JSON, no markdown."),
+                ChatMessage(role="user", content=prompt),
+            ],
+            max_tokens=128,
+            temperature=0.1,
+        )
+        resp = provider.complete(req)
+        if not resp.choices:
+            return None
+
+        raw = resp.choices[0].message.content.strip()
+        # Parse JSON from response
+        result = json.loads(raw)
+        score = float(result.get("score", 0))
+        passed = result.get("passed", score >= 0.7)
+        return {
+            "score": round(score, 4),
+            "passed": passed,
+            "failed_checks": result.get("failed_checks", []),
+            "reason_code": result.get("reason_code", "OK" if passed else "quality.low"),
+        }
+    except Exception as e:
+        log.warning(f"LLM validate failed, falling back to simulation: {e}")
+        return None
 
 
 def _guidance_from_failures(failed_checks: list) -> dict:
@@ -219,7 +280,7 @@ def _run_pipeline(record: TaskRecord, bus: EventBus):
         record.updated_at = _utc_now()
         step_val = trace.add_step(f"validate:rev{rev}")
         step_val.status = "running"
-        scores = _validate({"task_id": record.task_id}, attempt)
+        scores = _validate({"task_id": record.task_id}, attempt, content=content, message=record.message)
         last_scores = scores
         step_val.output = scores
         step_val.ended_at = time.time()
