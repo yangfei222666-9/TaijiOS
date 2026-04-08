@@ -93,6 +93,7 @@ def _map_hexagram(bits: str) -> dict:
 
 def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
     """从 coherent_engine 四维检查 + pipeline 运行时指标计算任务卦象。"""
+    import random
     checks = scores.get("checks", {})
     cc = checks.get("character_consistency", {}).get("score", 0.5)
     sc = checks.get("style_consistency", {}).get("score", 0.5)
@@ -100,13 +101,17 @@ def _calculate_task_hexagram(scores: dict, attempt: int, llm_ok: bool) -> dict:
     sub = checks.get("subtitle_safety", {}).get("score", 0.5)
     total = scores.get("score", 0.5)
 
+    # 环境扰动：模拟真实系统中的波动（±0.15），让卦象有区分度
+    def _jitter(v: float) -> float:
+        return max(0.0, min(1.0, v + random.uniform(-0.15, 0.05)))
+
     dims = [
-        total * (1.0 if llm_ok else 0.3),                                                  # 初爻：基础设施 × 总分
-        cc,                                                                                  # 二爻：角色一致性
-        sc,                                                                                  # 三爻：风格一致性
-        cont,                                                                                # 四爻：连贯性
-        sub * ({1: 1.0, 2: 0.8}.get(attempt, 0.6)),                                         # 五爻：可读性 × 自愈衰减
-        (cc + sc + cont + sub) / 4.0 * (0.9 if scores.get("passed") else 0.5),              # 上爻：综合治理
+        _jitter(total) * (1.0 if llm_ok else 0.3),                                          # 初爻：基础设施
+        _jitter(cc),                                                                          # 二爻：角色一致性
+        _jitter(sc),                                                                          # 三爻：风格一致性
+        _jitter(cont),                                                                        # 四爻：连贯性
+        _jitter(sub) * ({1: 0.95, 2: 0.75}.get(attempt, 0.5)),                               # 五爻：可读性 × 自愈衰减
+        (cc + sc + cont + sub) / 4.0 * (0.85 if scores.get("passed") else 0.45),             # 上爻：综合治理（不加扰动，保持稳定）
     ]
     bits = "".join(str(_discretize(d)) for d in dims)
     hexagram = _map_hexagram(bits)
