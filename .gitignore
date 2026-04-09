@@ -1,0 +1,38 @@
+# Secrets
+config.json
+*.env
+.env
+api_keys.json
+
+# Runtime data
+data/
+events/
+*.jsonl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build
+build/
+dist/
+*.spec
+*.zip
