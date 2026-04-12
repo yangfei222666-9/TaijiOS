@@ -144,22 +144,11 @@ python demo_engines.py
 
 ### Expected Output (mock mode)
 
-```
-╔══════════════════════════════════════════════════════════╗
-║          TaijiOS 五引擎全面演示                          ║
-║                      模拟模式 (--mock)                     ║
-╚══════════════════════════════════════════════════════════╝
+![五引擎演示完成](docs/images/demo-engines-output.png)
 
-  1. 情势引擎 — 六维向量 + 造动破解死锁
-  2. 震卦恢复引擎 — 六爻状态机驱动故障恢复
-  3. 师卦协作引擎 — 多 Agent 选帅/协作/仲裁/赏罚
-  4. Persona 层 — 角色匹配 + 阴阳平衡
-  5. 颐卦自学引擎 — 吸收/消化/沉淀/反哺
-  6. 引擎注册中心 — 统一路由（五引擎）
+### Dashboard
 
-EventBus 事件总数: 80
-✅ 五引擎全面演示完成
-```
+![TaijiOS Dashboard](docs/images/dashboard.png)
 
 ---
 
