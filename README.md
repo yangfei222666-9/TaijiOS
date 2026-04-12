@@ -6,7 +6,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)
-![Validation: 80/80](https://img.shields.io/badge/Validation-80%2F80%20events-brightgreen.svg)
+![Tests Passing](https://img.shields.io/badge/Tests-80%2F80%20passing-brightgreen.svg)
 ![Platforms: Feishu + Telegram](https://img.shields.io/badge/Platforms-Feishu%20%2B%20Telegram-orange.svg)
 
 ---
@@ -71,33 +71,32 @@ This repo contains the **validated five-engine core** — the minimal working sy
 
 ## The Five Engines
 
+```mermaid
+graph TD
+    EB["EventBus<br/>pub/sub backbone"]
+    S["情势引擎<br/>Situation Engine<br/>6D vector + intervention"]
+    Z["震卦恢复<br/>Zhen Recovery<br/>6-yao state machine"]
+    SH["师卦协作<br/>Shi Swarm<br/>select + command + swarm"]
+    P["角色层<br/>Persona Layer<br/>yin-yang balance"]
+    Y["颐卦自学<br/>Yi Learning<br/>collect → digest → persist"]
+
+    EB --> S
+    EB --> Z
+    EB --> SH
+    EB --> P
+    EB --> Y
+    Y -.->|experience feedback| S
+    Y -.->|experience feedback| Z
+    Y -.->|experience feedback| SH
 ```
-                    ┌─────────────────────────────────┐
-                    │           EventBus               │
-                    │       (pub/sub backbone)          │
-                    └──┬───────┬───────┬───────┬───────┤
-                       │       │       │       │       │
-              ┌────────┴┐ ┌───┴─────┐ ┌┴──────┐ ┌────┴────┐ ┌────┴─────┐
-              │Situation │ │  Zhen   │ │  Shi  │ │ Persona │ │    Yi    │
-              │ Engine   │ │Recovery │ │ Swarm │ │  Layer  │ │ Learning │
-              │ 情势引擎 │ │震卦恢复 │ │师卦协作│ │ 角色层  │ │ 颐卦自学 │
-              │          │ │         │ │       │ │         │ │          │
-              │ 6D vector│ │ 6-yao   │ │select │ │yin-yang │ │ collect  │
-              │+intervene│ │ state   │ │command│ │ balance │ │ digest   │
-              │          │ │ machine │ │+swarm │ │ +match  │ │ persist  │
-              │          │ │         │ │       │ │         │ │ feedback │
-              └──────────┘ └─────────┘ └───────┘ └─────────┘ └──────────┘
-```
 
-1. **Situation Engine (情势引擎)** -- Maps 18 system metrics to a 6-dimensional vector (timing, resource, initiative, position, relationship, energy). Detects tensions between dimensions and "intervenes" on a third dimension to break deadlocks, instead of forcing a direct tradeoff.
-
-2. **Zhen Recovery Engine (震卦恢复引擎)** -- A 6-yao state machine (ALERT -> ASSESS -> REACT -> FALLBACK -> STABILIZE -> LEARN) for fault recovery. Balances yin force (Guardian Agent, defensive) and yang force (Reactor Agent, offensive) at each stage.
-
-3. **Shi Swarm Engine (师卦协作引擎)** -- Multi-agent coordination following the "army hexagram" pattern: validate orders, select a commander, recruit a squad, execute in parallel, detect conflicts, arbitrate (vote/priority/merge), and apply rewards/punishments.
-
-4. **Persona Layer (Persona 层)** -- Attaches rich identity to each agent: department, hexagram, yin/yang polarity, military rank, keyword activation rules. Selects balanced teams by alternating yin and yang members.
-
-5. **Yi Learning Engine (颐卦自学引擎)** -- Collects experience records from the other four engines via EventBus, digests similar experiences into meta-lessons, persists with weight decay, and provides both passive query and active advisory feedback.
+| 引擎 | 做什么 | 怎么做 |
+|------|--------|--------|
+| **情势引擎** | 判断系统当前状态 | 18个指标→6维向量，维度冲突时"造动"第三维破局 |
+| **震卦恢复** | 故障自愈 | 6爻状态机: ALERT→ASSESS→REACT→FALLBACK→STABILIZE→LEARN |
+| **师卦协作** | 多Agent协作 | 验令→选帅→点兵→并行执行→冲突仲裁→赏罚 |
+| **角色层** | Agent身份 | 部门/卦象/阴阳极性/军衔，阴阳交替组队 |
+| **颐卦自学** | 经验沉淀 | 采集→消化→持久化（带衰减）→被动查询+主动反哺 |
 
 ---
 
@@ -269,15 +268,17 @@ MIT
 
 ## Architecture Overview
 
-```
-用户消息 → JWT认证(每用户独立灵魂)
-  → 意图鸡尾酒(四维评分: 工作/闲聊/危机/学习)
-  → 五虎上将军议(五个AI将军实时评估)
-  → 灵魂引擎(人格/情绪/记忆/进化)
-  → 动态 system prompt(不是固定模板)
-  → LLM调用(ollama本地 / Claude云端自动切换)
-  → 进化调度(每10轮分析，自动调整策略)
-  → 回复
+```mermaid
+graph LR
+    U["用户消息"] --> JWT["JWT认证<br/>每用户独立灵魂"]
+    JWT --> IM["意图鸡尾酒<br/>工作/闲聊/危机/学习"]
+    IM --> FG["五虎上将军议<br/>五将实时评估"]
+    FG --> SE["灵魂引擎<br/>人格·记忆·进化"]
+    SE --> SP["动态 system prompt"]
+    SP --> LLM["LLM<br/>ollama本地 / Claude云端"]
+    LLM --> EVO["进化调度<br/>每10轮自动调参"]
+    EVO --> R["回复"]
+    EVO -.->|反馈| SE
 ```
 
 易经64卦 = 64维状态空间映射函数。6个爻 = 6个二进制位 = 64种系统状态组合。爻变 = 状态转移。卦辞 = 该状态下的策略。**人类花了3000年调参的决策树。**
