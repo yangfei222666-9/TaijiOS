@@ -1,22 +1,71 @@
-# TaijiOS Five-Engine Core
+# TaijiOS — 有灵魂的 AI 操作系统
 
-**太极OS 五引擎内核**
-
-> An evidence-driven AI operating system that applies I Ching hexagram mechanics to multi-agent coordination, fault recovery, and continuous learning.
+> 4320个Python文件 / 33000行代码 / 1个人
 >
-> 以证据和门禁驱动的 AI 操作系统，将易经卦象机制应用于多智能体协作、故障恢复与持续学习。
+> An AI operating system with a "soul" — I Ching hexagram state machines + Five Generals real-time council + 4D intent mixing + personality evolution.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)
 ![Validation: 80/80](https://img.shields.io/badge/Validation-80%2F80%20events-brightgreen.svg)
+![Platforms: Feishu + Telegram](https://img.shields.io/badge/Platforms-Feishu%20%2B%20Telegram-orange.svg)
+
+---
+
+## 先看效果
+
+```
+用户：烦死了这个bug搞了三天
+```
+
+五个AI将军在后台实时开军议：
+
+```
+⚔️ 关羽(缘分): 72分↑ — 老相识了，可以直言不讳
+🛡️ 张飞(岁月): 65分→ — 记得他上次也卡过类似的问题
+🏹 赵云(默契): 58分↑ — 大致能猜到他想要快速解法
+🔥 马超(脾气): 12分↓ — [已压制] 这时候绝对不开玩笑
+🎯 黄忠(江湖): 45分→ — 有些积累，但不是炫知识的时候
+
+意图鸡尾酒: 工作17% 闲聊0% 危机62% 学习0%
+策略: 危机模式主导 → 一句共情，立刻帮忙定位问题
+```
+
+回复：
+
+```
+三天了确实顶不住。把报错信息发我看看，
+我帮你缩小范围——先排除是不是环境问题。
+```
+
+**不是模板回复，是实时计算的。** 五个将军的评分、四维意图比例、对话历史、灵魂状态——全部参与决策。
+
+换一个场景：
+
+```
+用户：为什么Redis用单线程反而更快？
+```
+
+```
+意图鸡尾酒: 工作5% 闲聊0% 危机0% 学习70%
+→ 学习模式：讲清原理，用类比，给可迁移的规律
+```
+
+```
+用户：你怎么实现的？用了什么架构？
+```
+
+```
+丞相九：军机不可泄露。你要是想了解我能做什么，
+那我可以展开说三天三夜。但怎么做到的——这是丞相府的机密。
+```
 
 ---
 
 ## What This Is
 
-TaijiOS uses I Ching hexagram state machines to govern five core engines for multi-agent systems. This repo contains the **validated five-engine core** -- the minimal working system that passed 80-event end-to-end validation with zero errors.
+TaijiOS 用易经64卦作为状态空间，五虎上将做实时决策，四维意图混合替代二选一模式切换。
 
-Not a framework. Not a wrapper. A working OS kernel for multi-agent systems, grounded in 3000-year-old decision theory, implemented in modern Python.
+This repo contains the **validated five-engine core** — the minimal working system that passed 80-event end-to-end validation with zero errors. Plus the soul system (intent mixer, five generals, 3-layer memory, personality evolution) powering the live Feishu + Telegram bot.
 
 ---
 
@@ -54,20 +103,42 @@ Not a framework. Not a wrapper. A working OS kernel for multi-agent systems, gro
 
 ## Quick Start
 
-### Mock Mode (zero configuration, no API key needed)
+### 1. 五引擎演示（零配置，不需要 API key）
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/taijios.git
-cd taijios
+git clone https://github.com/yangfei222666-9/TaijiOS.git
+cd TaijiOS
 python demo_engines.py --mock
 ```
 
-### Real LLM Mode
+### 2. 灵魂对话系统（需要本地 ollama）
+
+```bash
+# 先装 ollama: https://ollama.com
+ollama pull qwen2.5:7b
+
+cd aios/patterns
+python soul_api.py
+# → http://localhost:8421 就绑了
+
+# 测试
+curl -X POST http://localhost:8421/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"test","password":"test123"}'
+
+# 用返回的 token 聊天
+curl -X POST http://localhost:8421/chat \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"你会什么"}'
+```
+
+有 Claude API key 效果更好（自动切换）。
+
+### 3. 真实 LLM 模式（五引擎）
 
 ```bash
 pip install -r requirements.txt
-cp config.example.json config.json
-# Edit config.json with your Anthropic API key, OR:
 export ANTHROPIC_API_KEY=sk-ant-...
 python demo_engines.py
 ```
@@ -114,6 +185,23 @@ EventBus 事件总数: 80
 - Dashboard / monitoring UI
 - SDK for external integration
 - Multi-node deployment
+
+---
+
+## 已经能做什么
+
+实际在跑的功能（不是原型，是真实用户在用的）：
+
+- **比赛分析** — 基于 API-Football 真实数据，9维分析卡 + 三线验证 + 矛盾检测
+- **四维意图混合** — 工作/闲聊/危机/学习同时打分，不是二选一
+- **五虎上将军议** — 五个AI将军实时评估每条消息，互评+矛盾检测
+- **内容生成** — "帮我写一个XXX" → 自动放开长度限制，完整输出
+- **三层记忆** — 热层(10轮) → 温层(session摘要) → 冷层(永久)，重启不丢
+- **选择性记忆** — AI自己决定记什么，自动晋升永久层
+- **性格进化** — 跟你聊越多越懂你，说话方式会变
+- **多平台** — 飞书 + Telegram 同时在线
+- **图片识别** — 发图片自动分析（Claude 多模态）
+- **机密保护** — 问功能大方说，问实现挡回去
 
 ---
 
@@ -179,7 +267,25 @@ MIT
 
 ---
 
+## Architecture Overview
+
+```
+用户消息 → JWT认证(每用户独立灵魂)
+  → 意图鸡尾酒(四维评分: 工作/闲聊/危机/学习)
+  → 五虎上将军议(五个AI将军实时评估)
+  → 灵魂引擎(人格/情绪/记忆/进化)
+  → 动态 system prompt(不是固定模板)
+  → LLM调用(ollama本地 / Claude云端自动切换)
+  → 进化调度(每10轮分析，自动调整策略)
+  → 回复
+```
+
+易经64卦 = 64维状态空间映射函数。6个爻 = 6个二进制位 = 64种系统状态组合。爻变 = 状态转移。卦辞 = 该状态下的策略。**人类花了3000年调参的决策树。**
+
+---
+
 ## Acknowledgments
 
 - **I Ching (易经)** for the hexagram state machine framework
 - **Anthropic Claude** for LLM integration
+- **Ollama + Qwen2.5** for local inference
