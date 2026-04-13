@@ -24,6 +24,7 @@ from taijios.engine.soul_aware_code_assist import SoulAwareCodeAssist
 from taijios.evolution.soul_evolution_analyzer import SoulEvolutionAnalyzer
 from taijios.evolution.soul_growth_engine import SoulGrowthEngine
 from taijios.evolution.soul_evolution_bridge import SoulEvolutionBridge
+from taijios.evolution.crystallization_engine import CrystallizationEngine
 from taijios.engine.safety_soul_guard import SafetySoulGuard, integrate_guard_with_api
 from taijios.engine.intent_mixer import IntentMixer, build_mode_prompt
 from taijios.engine.five_generals import CouncilOfGenerals
@@ -46,6 +47,7 @@ class _EvolutionScheduler:
     ANALYZE_EVERY = 10
     GROW_EVERY = 20
     BRIDGE_EVERY = 20
+    CRYSTALLIZE_EVERY = 20
 
     @staticmethod
     def should_analyze(count: int) -> bool:
@@ -58,6 +60,10 @@ class _EvolutionScheduler:
     @staticmethod
     def should_bridge(count: int) -> bool:
         return count > 0 and count % _EvolutionScheduler.BRIDGE_EVERY == 0
+
+    @staticmethod
+    def should_crystallize(count: int) -> bool:
+        return count > 0 and count % _EvolutionScheduler.CRYSTALLIZE_EVERY == 0
 
 
 # ============================================================
@@ -145,6 +151,7 @@ class Soul:
         )
         self._memory = SelectiveMemory(data_dir=user_dir)
         self._council = CouncilOfGenerals(data_dir=user_dir)
+        self._crystallizer = CrystallizationEngine(data_dir=user_dir)
         self._mixer = IntentMixer()
         self._llm = LLMCaller(api_key=api_key, ollama_url=ollama_url, model=model)
         self._interaction_count = 0
@@ -348,10 +355,15 @@ class Soul:
                 "user_id": self.user_id,
                 "positive": implicit_positive,
                 "detail": "auto_implicit",
+                "message": message[:200],
+                "reply": reply[:200],
+                "intent": intent_mix.to_dict() if intent_mix else {},
                 "context": {
                     "relationship_stage": soul.fate.stage,
                     "dominant_trait": soul.get_context().get("dominant_trait", ""),
                     "frustration": round(soul._frustration_score, 3),
+                    "personality_card": soul.get_context().get("personality_card", ""),
+                    "stage_label": soul.fate.stage_label,
                 },
                 "active_patches": assist._last_active_patches[:] if hasattr(assist, '_last_active_patches') else [],
             }
@@ -402,18 +414,29 @@ class Soul:
             except Exception as e:
                 logger.error("Bridge sync failed: %s", e)
 
-        # 9d. 叙事事件
+        # 9d. 经验结晶
+        if _EvolutionScheduler.should_crystallize(count):
+            try:
+                new_crystals = self._crystallizer.crystallize()
+                if new_crystals:
+                    evolution_notes.append(
+                        f"crystallized:{len(new_crystals)}rules"
+                    )
+            except Exception as e:
+                logger.error("Crystallization failed: %s", e)
+
+        # 9e. 叙事事件
         if events.get("mutations"):
             for m in events["mutations"]:
                 narrative.record_mutation(m.get("name", ""))
         if events.get("milestone"):
             narrative.record_milestone(events["milestone"].get("type", ""))
 
-        # 9e. 记录对话
+        # 9f. 记录对话
         ctx_engine.add_turn(message, reply)
         ctx_engine.check_overflow()
 
-        # 9f. 自动 session 压缩
+        # 9g. 自动 session 压缩
         if ctx_engine.hot.turn_count > 0 and ctx_engine.hot.turn_count % 20 == 0:
             soul_ctx = soul.get_context()
             session_data = ctx_engine.hot.export_session()
@@ -424,7 +447,7 @@ class Soul:
             })
             ctx_engine.warm.add_summary(summary)
 
-        # 9g. 选择性记忆
+        # 9h. 选择性记忆
         try:
             memory.judge_and_store(
                 message, reply,
@@ -433,7 +456,7 @@ class Soul:
         except Exception as e:
             logger.error("SelectiveMemory judge failed: %s", e)
 
-        # 9h. 记忆维护
+        # 9i. 记忆维护
         if _EvolutionScheduler.should_grow(count):
             try:
                 memory.maintain()

@@ -118,22 +118,29 @@ class SoulAwareCodeAssist:
         return wrapped
 
     def _load_crystals(self) -> list[dict]:
-        """从冷存储加载经验结晶"""
+        """从冷存储加载经验结晶（兼容 SDK data_dir 和旧路径）"""
         user_id = self.soul.user_id if hasattr(self.soul, 'user_id') else ""
         if not user_id:
             return []
-        crystal_path = os.path.join(
+        # 优先从 soul 的 state_dir 加载（SDK 路径）
+        candidates = []
+        if hasattr(self.soul, 'state_dir') and self.soul.state_dir:
+            candidates.append(os.path.join(self.soul.state_dir, "experience_crystals.json"))
+        # 旧路径兼容
+        candidates.append(os.path.join(
             os.path.dirname(__file__) or ".",
             "soul_data", user_id, "context", "cold", "experience_crystals.json"
-        )
-        if not os.path.exists(crystal_path):
-            return []
-        try:
-            with open(crystal_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return [c for c in data.get("crystals", []) if c.get("confidence", 0) >= 0.8]
-        except Exception:
-            return []
+        ))
+        for crystal_path in candidates:
+            if not os.path.exists(crystal_path):
+                continue
+            try:
+                with open(crystal_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return [c for c in data.get("crystals", []) if c.get("confidence", 0) >= 0.8]
+            except Exception:
+                continue
+        return []
 
     # ────────────────────────────────────────────
     # 翻译器：每个灵魂维度 → prompt 指令
