@@ -102,7 +102,32 @@ graph TD
 
 ## Quick Start
 
-### 1. 五引擎演示（零配置，不需要 API key）
+### 方式一：pip install（推荐，三步跑通）
+
+```bash
+pip install git+https://github.com/yangfei222666-9/TaijiOS.git#subdirectory=taijios-soul
+```
+
+```python
+from taijios import Soul
+
+soul = Soul(user_id="alice")
+r = soul.chat("你好")
+print(r.reply)       # 灵魂驱动的回复
+print(r.intent)      # {work: 0.0, chat: 1.0, crisis: 0.0, learning: 0.0}
+print(r.stage)       # 初见 → 眼熟 → 熟人 → 老友
+```
+
+零配置。不需要 API key，不需要数据库。本地有 ollama 就用 ollama，没有就用 mock 模式。
+
+完整演示（5轮对话，看意图/记忆/军议/关系变化）：
+
+```bash
+cd taijios-soul
+python quickstart.py
+```
+
+### 方式二：五引擎演示（零配置）
 
 ```bash
 git clone https://github.com/yangfei222666-9/TaijiOS.git
@@ -110,7 +135,7 @@ cd TaijiOS
 python demo_engines.py --mock
 ```
 
-### 2. 灵魂对话系统（需要本地 ollama）
+### 方式三：灵魂对话 HTTP 服务（需要本地 ollama）
 
 ```bash
 # 先装 ollama: https://ollama.com
@@ -134,7 +159,7 @@ curl -X POST http://localhost:8421/chat \
 
 有 Claude API key 效果更好（自动切换）。
 
-### 3. 真实 LLM 模式（五引擎）
+### 方式四：真实 LLM 模式（五引擎）
 
 ```bash
 pip install -r requirements.txt
