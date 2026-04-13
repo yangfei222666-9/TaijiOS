@@ -10,6 +10,7 @@ TaijiOS Soul SDK — 三行代码给 AI 装灵魂
 """
 
 import hashlib
+import json
 import logging
 import os
 import time
@@ -334,10 +335,31 @@ class Soul:
         if intent_mix.chat > 0.4 and intent_mix.crisis < 0.3:
             reply += pick_signature()
 
-        # ── STEP 8: RL 快照 ──
+        # ── STEP 8: RL 快照 + 自动 outcome ──
         rl.take_snapshot()
         self._interaction_count += 1
         count = self._interaction_count
+
+        # 自动写 outcome（不依赖用户手动 feedback）
+        implicit_positive = implicit if implicit is not None else True
+        try:
+            auto_outcome = {
+                "timestamp": time.time(),
+                "user_id": self.user_id,
+                "positive": implicit_positive,
+                "detail": "auto_implicit",
+                "context": {
+                    "relationship_stage": soul.fate.stage,
+                    "dominant_trait": soul.get_context().get("dominant_trait", ""),
+                    "frustration": round(soul._frustration_score, 3),
+                },
+                "active_patches": assist._last_active_patches[:] if hasattr(assist, '_last_active_patches') else [],
+            }
+            outcomes_path = os.path.join(self._data_dir, "soul_outcomes.jsonl")
+            with open(outcomes_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(auto_outcome, ensure_ascii=False) + "\n")
+        except Exception as e:
+            logger.warning("Auto outcome write failed: %s", e)
 
         # ── STEP 9: 进化调度 ──
         evolution_notes = []
