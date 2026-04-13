@@ -116,7 +116,7 @@ class MemoryJudge:
     FORCE_REMEMBER = ["记住", "别忘了", "以后都", "永远", "从现在起", "重要", "关键", "核心", "必须"]
     FORCE_FORGET = ["忘掉", "别记", "不用记", "随便说说"]
     MIN_LENGTH = 5
-    REMEMBER_THRESHOLD = 0.4
+    REMEMBER_THRESHOLD = 0.3
 
     def judge(self, message: str, reply: str = "",
               soul_context: dict = None) -> Optional[MemoryEntry]:
@@ -134,7 +134,14 @@ class MemoryJudge:
         importance = self._score_importance(msg, base_importance, force)
         uniqueness = self._score_uniqueness(msg)
         emotional = self._score_emotional(msg, soul_context)
-        total = importance * 0.4 + uniqueness * 0.3 + emotional * 0.2
+        # reply 中包含用户相关信息时加分（说明这轮对话有实质内容）
+        reply_bonus = 0.0
+        if reply:
+            if any(kw in reply for kw in ["你之前", "你说过", "你提到", "上次", "记得你"]):
+                reply_bonus = 0.15
+            elif len(reply) > 100:
+                reply_bonus = 0.05
+        total = importance * 0.4 + uniqueness * 0.3 + emotional * 0.2 + reply_bonus
         if not force and total < self.REMEMBER_THRESHOLD:
             return None
         content = msg[:50] + ("..." if len(msg) > 50 else "")
