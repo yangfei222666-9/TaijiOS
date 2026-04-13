@@ -277,6 +277,7 @@ class CouncilOfGenerals:
 
     def __init__(self, data_dir: str = None):
         self.data_dir = data_dir
+        self.total_councils = 0
         self.generals = {
             "关羽": General(name="关羽", title="缘分"),
             "张飞": General(name="张飞", title="岁月"),
@@ -322,7 +323,8 @@ class CouncilOfGenerals:
         # ── 第四轮：丞相决策 ──
         strategy, style_params = self._chancellor_decision(message, conflicts)
 
-        # 保存状态
+        # 军议计数 + 保存状态
+        self.total_councils += 1
         self._save()
 
         result = {
@@ -455,10 +457,13 @@ class CouncilOfGenerals:
         filepath = os.path.join(self.data_dir, "five_generals.json")
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         try:
-            data = {name: {
-                "score": g.score, "confidence": g.confidence,
-                "opinion": g.opinion, "history": g.history[-10:],
-            } for name, g in self.generals.items()}
+            data = {
+                "total_councils": self.total_councils,
+                "generals": {name: {
+                    "score": g.score, "confidence": g.confidence,
+                    "opinion": g.opinion, "history": g.history[-10:],
+                } for name, g in self.generals.items()},
+            }
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         except Exception as e:
@@ -473,7 +478,14 @@ class CouncilOfGenerals:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            for name, d in data.items():
+            # 兼容新旧格式
+            if "generals" in data:
+                self.total_councils = data.get("total_councils", 0)
+                generals_data = data["generals"]
+            else:
+                # 旧格式：顶层就是将军数据
+                generals_data = data
+            for name, d in generals_data.items():
                 if name in self.generals:
                     self.generals[name].score = d.get("score", 50)
                     self.generals[name].confidence = d.get("confidence", 0.5)
@@ -484,6 +496,7 @@ class CouncilOfGenerals:
 
     def to_dict(self) -> dict:
         return {
+            "total_councils": self.total_councils,
             "generals": {name: g.to_dict() for name, g in self.generals.items()},
             "average_score": round(sum(g.score for g in self.generals.values()) / 5, 1),
         }
