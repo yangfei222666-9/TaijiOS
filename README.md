@@ -1,3 +1,15 @@
+# Legacy prototype · 已迁移
+
+> This repository is an early TaijiOS prototype.
+>
+> Current main repository: [yangfei222666-9/taiji](https://github.com/yangfei222666-9/taiji)
+>
+> Live HUD demo: [taijios-hud.netlify.app](https://taijios-hud.netlify.app)
+
+This repo remains online for history and links. New development, issues, and public-facing documentation should go to the main repo above.
+
+---
+
 # TaijiOS — 有灵魂的 AI 操作系统
 
 > 4320个Python文件 / 33000行代码 / 1个人
