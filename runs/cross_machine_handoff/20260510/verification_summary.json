@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-05-10T15:15:00Z",
+  "machine": "win11",
+  "actor": "codex",
+  "repo": "TaijiOS",
+  "git_ref": "master local",
+  "status": "partial",
+  "checks": [
+    {
+      "name": "required_files_exist",
+      "command": "$required = @('docs\\\\CROSS_MACHINE_OPERATING_PROTOCOL.md','runs\\\\cross_machine_handoff\\\\20260510\\\\event_flow.jsonl','runs\\\\cross_machine_handoff\\\\20260510\\\\context_packet.md','runs\\\\cross_machine_handoff\\\\20260510\\\\verification_summary.json'); foreach ($p in $required) { Test-Path -LiteralPath $p }",
+      "status": "pass",
+      "evidence": "All four required artifact paths exist."
+    },
+    {
+      "name": "event_flow_jsonl_parse",
+      "command": "Get-Content runs\\\\cross_machine_handoff\\\\20260510\\\\event_flow.jsonl | ForEach-Object { $_ | ConvertFrom-Json | Out-Null }",
+      "status": "pass",
+      "evidence": "The event flow parsed successfully as 5 JSONL lines after verification events were appended."
+    },
+    {
+      "name": "verification_summary_json_parse",
+      "command": "Get-Content runs\\\\cross_machine_handoff\\\\20260510\\\\verification_summary.json -Raw | ConvertFrom-Json",
+      "status": "pass",
+      "evidence": "The verification summary parsed as JSON."
+    },
+    {
+      "name": "event_flow_git_trackability",
+      "command": "git add --dry-run runs\\\\cross_machine_handoff\\\\20260510\\\\event_flow.jsonl",
+      "status": "pass",
+      "evidence": "Git dry-run reported: add 'runs/cross_machine_handoff/20260510/event_flow.jsonl'."
+    },
+    {
+      "name": "project_memory_boundaries_documented",
+      "command": "Read docs\\\\CROSS_MACHINE_OPERATING_PROTOCOL.md and runs\\\\cross_machine_handoff\\\\20260510\\\\context_packet.md",
+      "status": "pass",
+      "evidence": "Protocol and context packet now state that shared project memory is artifact-based only, excludes secrets and unverified state, and requires reviewed lessons before long-term rule promotion."
+    },
+    {
+      "name": "t7_audit_artifacts_created",
+      "command": "Test-Path docs\\\\T7_TAIJIOS_RELEASE_AUDIT.md; Test-Path runs\\\\cross_machine_handoff\\\\20260510\\\\context_packet_t7_release_audit.md",
+      "status": "pass",
+      "evidence": "T7 audit report and T7-specific context packet were created in the target repo as artifacts only."
+    },
+    {
+      "name": "no_t7_runtime_code_copied",
+      "command": "Test-Path aios\\\\arena\\\\signal_bot.py; Test-Path aios\\\\arena\\\\signal_learn.py; Test-Path aios\\\\voice\\\\doubao_tts_v3.py; Test-Path docs\\\\LAYERED_ARCHITECTURE.md; Test-Path aios\\\\policy\\\\hexagram_logger.py",
+      "status": "pass",
+      "evidence": "All checked T7 runtime/source paths are absent from C-drive TaijiOS; only audit and handoff artifacts were added."
+    }
+  ],
+  "unverified": [
+    "Runtime behavior was not tested because this bootstrap only adds operating protocol documentation and handoff artifacts.",
+    "Mac read-only review has not happened yet.",
+    "No GitHub push or pull request has happened yet."
+  ],
+  "next_required_action": "Mac read-only review of protocol artifacts plus docs/T7_TAIJIOS_RELEASE_AUDIT.md and context_packet_t7_release_audit.md."
+}
