@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 AIOS Task Executor - 浠庨槦鍒楀彇浠诲姟骞堕€氳繃 sessions_spawn 鐪熷疄鎵ц
 
@@ -25,12 +25,15 @@ except ImportError:
     EXEC_LOG = BASE_DIR / "data" / "task_executions_v2.jsonl"
 MEMORY_LOG = BASE_DIR / "memory_retrieval_log.jsonl"
 
-# 鈹€鈹€ Memory Retrieval 寮€鍏?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# Memory retrieval settings. Keep this block ASCII; this file contains legacy
+# mojibake comments, and a previous comment swallowed the assignments below.
 MEMORY_RETRIEVAL_ENABLED = os.environ.get("MEMORY_RETRIEVAL_ENABLED", "true").lower() == "true"
-MEMORY_TIMEOUT_MS = int(os.environ.get("MEMORY_TIMEOUT_MS", "400"))   # 闄嶇骇闃堝€?MEMORY_MAX_HINTS = int(os.environ.get("MEMORY_MAX_HINTS", "3"))        # 鏈€澶氭敞鍏ユ潯鏁?MEMORY_MAX_CHARS = int(os.environ.get("MEMORY_MAX_CHARS", "250"))      # 姣忔潯鎽樿瀛楃鏁?
+MEMORY_TIMEOUT_MS = int(os.environ.get("MEMORY_TIMEOUT_MS", "400"))
+MEMORY_MAX_HINTS = int(os.environ.get("MEMORY_MAX_HINTS", "3"))
+MEMORY_MAX_CHARS = int(os.environ.get("MEMORY_MAX_CHARS", "250"))
 
 def _retrieve_with_timeout(task_desc: str, task_type: str) -> dict:
-    """甯﹁秴鏃剁殑璁板繂妫€绱紝瓒呮椂闄嶇骇涓虹┖ context銆?""
+    """Retrieve memory with a timeout; degrade to empty context on failure."""
     result = {"hits": [], "latency_ms": 0, "error": None}
     if not MEMORY_RETRIEVAL_ENABLED:
         result["error"] = "disabled"
@@ -62,16 +65,7 @@ def _retrieve_with_timeout(task_desc: str, task_type: str) -> dict:
 
 
 def build_memory_context(task_desc: str, task_type: str = "") -> dict:
-    """
-    妫€绱㈣蹇嗗苟鏋勫缓 execution_context.memory_hints銆?    杩斿洖:
-      {
-        "memory_hints": [...],   # 娉ㄥ叆鍒?prompt 鐨勬憳瑕佸垪琛?        "memory_ids": [...],     # 鐢ㄤ簬 feedback 鍥炲啓
-        "retrieved_count": N,
-        "used_count": N,
-        "latency_ms": N,
-        "degraded": bool,        # True = 瓒呮椂/寮傚父闄嶇骇
-      }
-    """
+    """Build execution_context.memory_hints."""
     ret = _retrieve_with_timeout(task_desc, task_type)
     degraded = bool(ret["error"])
     hits = ret["hits"][:MEMORY_MAX_HINTS]
@@ -150,7 +144,8 @@ def write_execution_record(
         try:
             from skill_memory import skill_memory
             
-            # 鎻愬彇 skill_id锛堝幓鎺?-dispatcher 鍚庣紑锛?            skill_id = agent_id.replace("-dispatcher", "")
+            # Extract skill_id by removing the dispatcher suffix.
+            skill_id = agent_id.replace("-dispatcher", "")
             
             # 鏋勫缓 command锛堜粠 metadata 鎴?result 涓彁鍙栵級
             command = "unknown"
@@ -176,13 +171,14 @@ def write_execution_record(
                     "side_effects": side_effects
                 }
             )
-        except Exception as e:
-            # 闈欓粯澶辫触锛屼笉褰卞搷涓绘祦绋?            pass
+        except Exception:
+            # Skill memory tracking must not break the main execution log.
+            pass
 
 
 def write_memory_feedback(task_id: str, memory_ids: list, helpful: bool,
                           score: float, reason: str) -> None:
-    """鎵ц鍚庡啓 feedback锛屾垚鍔?澶辫触閮藉啓锛堥伩鍏嶅彧瀛︿範鎴愬姛鏍锋湰锛夈€?""
+    """Write memory feedback after execution, for both success and failure."""
     if not memory_ids:
         return
     try:
@@ -250,7 +246,7 @@ SPAWN_CONFIG = {
 
 
 def get_pending_tasks():
-    """鑾峰彇寰呮墽琛屼换鍔★紙status=running锛屽凡琚?heartbeat 鍒嗗彂锛?""
+    """Return tasks marked running by heartbeat dispatch."""
     if not QUEUE_PATH.exists():
         return []
     tasks = []
@@ -266,7 +262,7 @@ def get_pending_tasks():
 
 
 def generate_spawn_commands(tasks):
-    """鐢熸垚 spawn 鍛戒护鍒楄〃锛堥泦鎴?Memory Retrieval锛?""
+    """Generate spawn commands with memory retrieval context."""
     commands = []
     for task in tasks:
         agent_id = task["agent_id"]
@@ -343,7 +339,8 @@ def main():
 
     commands = generate_spawn_commands(tasks)
 
-    # 杈撳嚭 JSON锛堜緵 OpenClaw 璇诲彇锛?    output = {
+    # Output JSON for the caller.
+    output = {
         "status": "ready",
         "count": len(commands),
         "commands": commands,

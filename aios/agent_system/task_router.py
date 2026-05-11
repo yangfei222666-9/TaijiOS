@@ -17,10 +17,16 @@ import sys
 import time
 import re
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
-from core.status_adapter import get_agent_status
+
+try:
+    from core.status_adapter import get_agent_status
+except ModuleNotFoundError:
+    def get_agent_status(agent: Dict) -> str:
+        """Fallback for older checkouts that do not include status_adapter."""
+        return str(agent.get("status", "active")).lower()
 
 BASE_DIR = Path(__file__).resolve().parent
 REGISTRY_PATH = BASE_DIR / "unified_registry.json"
@@ -41,7 +47,7 @@ KEYWORD_MAP = {
     "写一个": "code", "创建": "code", "生成代码": "code", "函数": "code",
     "脚本": "code", "程序": "code", "算法": "code", "写个": "code",
     # debug 类
-    "调试": "debug", "修bug": "debug", "修复": "debug", "排错": "debug",
+    "调试": "debug", "修bug": "debug", "排错": "debug",
     "报错": "debug", "错误": "debug", "异常": "debug", "崩溃": "debug",
     # refactor 类
     "重构": "refactor", "优化代码": "refactor", "整理代码": "refactor",
@@ -211,7 +217,7 @@ class TaskRouter:
                 agent_name=fallback.get("name", "代码开发专家"),
                 task_type=task_type or "code",
                 confidence=0.2,
-                reason=f"无精确匹配，降级到 coder（万能选手）",
+                reason="无精确匹配，降级到 coder（万能选手）",
                 alternatives=[]
             )
 
@@ -440,7 +446,7 @@ def main():
         print(f"  Confidence: {result.confidence:.0%}")
         print(f"  Reason:     {result.reason}")
         if result.alternatives:
-            print(f"  Alternatives:")
+            print("  Alternatives:")
             for alt in result.alternatives:
                 print(f"    - {alt['agent_id']} ({alt['agent_name']})")
 
@@ -458,7 +464,7 @@ def main():
         desc = " ".join(args).strip()
 
         task = router.submit(desc, priority)
-        print(f"\nTask Submitted:")
+        print("\nTask Submitted:")
         print(f"  ID:       {task.id}")
         print(f"  Agent:    {task.agent_id}")
         print(f"  Type:     {task.task_type}")
@@ -476,13 +482,13 @@ def main():
 
     elif cmd == "stats":
         stats = router.get_stats()
-        print(f"\nRouter Stats:")
+        print("\nRouter Stats:")
         print(f"  Total Routed:  {stats.get('total_routed', 0)}")
         print(f"  Agents Active: {stats.get('agents_active', 0)}/{stats.get('agents_total', 0)}")
         print(f"  Queue Pending: {stats.get('queue_pending', 0)}")
         by_agent = stats.get("by_agent", {})
         if by_agent:
-            print(f"  By Agent:")
+            print("  By Agent:")
             for agent_id, count in sorted(by_agent.items(), key=lambda x: -x[1]):
                 print(f"    {agent_id:>12}: {count}")
 
@@ -517,7 +523,7 @@ def main():
         print(f"\nAll {len(test_cases)} cases routed successfully.")
 
         # Planning 测试
-        print(f"\n--- Planning Test ---\n")
+        print("\n--- Planning Test ---\n")
         plan_cases = [
             "搜索 GitHub 上的 AIOS 项目，然后分析架构，最后写报告",
             "实现一个新的调度算法",

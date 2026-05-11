@@ -3,25 +3,70 @@
 """AIOS 健康检查脚本"""
 
 import json
+import os
 from pathlib import Path
 from datetime import datetime
-from agent_status import (
-    validate_status_object,
-    is_production_ready,
-    is_healthy,
-    needs_attention,
-    get_status_summary
-)
+
+try:
+    from agent_status import (
+        validate_status_object,
+        is_production_ready,
+        is_healthy,
+        needs_attention,
+        get_status_summary
+    )
+except ModuleNotFoundError:
+    def _status_value(state):
+        if not isinstance(state, dict):
+            return ""
+        return str(state.get("status") or state.get("health") or state.get("state") or "").lower()
+
+    def validate_status_object(state):
+        if not isinstance(state, dict):
+            return False, ["status object must be a dict"]
+        if not _status_value(state):
+            return False, ["missing status/health/state"]
+        return True, []
+
+    def is_production_ready(state):
+        return isinstance(state, dict) and bool(state.get("production_ready"))
+
+    def is_healthy(state):
+        return _status_value(state) in {"active", "healthy", "ok", "ready", "running"}
+
+    def needs_attention(state):
+        status = _status_value(state)
+        return bool(isinstance(state, dict) and state.get("needs_attention")) or status in {
+            "blocked", "degraded", "error", "failed", "unhealthy"
+        }
+
+    def get_status_summary(state):
+        if not isinstance(state, dict):
+            return "invalid status object"
+        status = _status_value(state) or "unknown"
+        ready = "prod-ready" if is_production_ready(state) else "not-prod-ready"
+        health = "healthy" if is_healthy(state) else "needs-check"
+        return f"status={status}, {ready}, {health}"
+
+
+def _agent_system_base_path():
+    configured = os.environ.get("TAIJIOS_AGENT_SYSTEM_DIR")
+    if configured:
+        return Path(os.path.expandvars(configured)).expanduser()
+    return Path(__file__).resolve().parent
 
 def main():
-    base_path = Path('${TAIJIOS_HOME}/.openclaw/workspace/aios/agent_system')
+    base_path = _agent_system_base_path()
 
     # 读取 agents.json
     agents_file = base_path / 'agents.json'
+    if not agents_file.exists():
+        print(f'AIOS agent data not found: {agents_file}')
+        return 100
+
     with open(agents_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
         agents = data.get('agents', [])
-        metadata = data.get('metadata', {})
 
     # 统计 Agent 状态
     total_agents = len(agents)
@@ -83,7 +128,7 @@ def main():
     score = 100
 
     # Agent 可用性（-10 if < 50% enabled）
-    if enabled_agents / total_agents < 0.5:
+    if total_agents and enabled_agents / total_agents < 0.5:
         score -= 10
 
     # 生产就绪度（-15 if < 2 production ready）

@@ -23,9 +23,8 @@ Transitions:
 
 from enum import Enum
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Dict
 import json
-from pathlib import Path
 
 class AgentState(Enum):
     """Agent states"""

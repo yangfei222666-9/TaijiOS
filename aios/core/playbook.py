@@ -29,10 +29,9 @@ Playbook：定义告警→动作的映射规则。
 存储：data/playbooks.json（可手动编辑扩展）
 """
 
-import json, os, sys, io
+import json, sys, io
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional
 
 if __name__ == "__main__":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")

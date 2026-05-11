@@ -10,11 +10,10 @@ import logging
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from .config import load_config, GatewayConfig
 from .schemas import (
-    ModelInfo, ModelListResponse, ErrorResponse, ErrorDetail,
+    ModelInfo, ModelListResponse,
     ChatCompletionRequest,
 )
 from .auth import verify_request

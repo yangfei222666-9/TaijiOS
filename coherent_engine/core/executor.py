@@ -1,5 +1,5 @@
 # core/executor.py
-from typing import Any, Dict, List
+from typing import Any, Dict
 from .aligner import FirstLastAligner
 from .orchestrator import ModuleOrchestrator
 from .tweener import AsyncTweener

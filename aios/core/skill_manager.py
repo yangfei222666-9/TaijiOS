@@ -2,7 +2,6 @@
 AIOS Skill Manager - 统一管理和调用所有 skill
 让 AIOS 能够使用 OpenClaw 的所有 skill
 """
-import json
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Any

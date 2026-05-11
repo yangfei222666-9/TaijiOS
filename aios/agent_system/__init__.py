@@ -9,9 +9,44 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
+from enum import Enum
 
-from .core.agent_manager import AgentManager
-from .unified_router_v1 import UnifiedRouter, TaskContext, TaskType, RiskLevel, Decision, ExecutionMode
+
+def _tail_lines(path: Path, max_lines: int) -> List[str]:
+    """Return the last max_lines from a text file."""
+    if max_lines <= 0:
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        return f.readlines()[-max_lines:]
+
+
+try:
+    from .core.agent_manager import AgentManager
+    from .unified_router_v1 import UnifiedRouter, TaskContext, TaskType, RiskLevel, Decision, ExecutionMode
+except ModuleNotFoundError:
+    AgentManager = None
+    UnifiedRouter = None
+    TaskContext = None
+    Decision = None
+    ExecutionMode = None
+
+    class TaskType(str, Enum):
+        REFACTOR = "refactor"
+        DEBUG = "debug"
+        TEST = "test"
+        OPTIMIZE = "optimize"
+        MONITOR = "monitor"
+        DEPLOY = "deploy"
+        ANALYZE = "analyze"
+        RESEARCH = "research"
+        REVIEW = "review"
+        DOCUMENT = "document"
+        CODING = "coding"
+
+    class RiskLevel(str, Enum):
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
 # from .evolution import AgentEvolution  # 临时注释，evolution.py 有语法错误
 
 
@@ -19,6 +54,12 @@ class AgentSystem:
     """自主 Agent 管理系统"""
 
     def __init__(self, data_dir: str = None, config_dir: str = None):
+        if AgentManager is None or UnifiedRouter is None or TaskContext is None:
+            raise RuntimeError(
+                "AgentSystem legacy dependencies are not present in this checkout "
+                "(expected aios.agent_system.core.agent_manager and unified_router_v1). "
+                "Import submodules directly or use task_router.TaskRouter."
+            )
         self.manager = AgentManager(data_dir)
         self.router = UnifiedRouter(enable_guardrails=True)  # 使用统一路由 v1.0（解释性 + 防抖滞回）
         # self.evolution = AgentEvolution(data_dir)  # 临时注释，evolution.py 有语法错误

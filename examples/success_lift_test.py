@@ -7,14 +7,11 @@ Group B: Manifest active experiences injected into guidance
 
 Metrics: pass_rate, avg_score, avg_auto_heal_rounds
 """
-import hashlib
 import json
 import random
-import time
-from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 OUTPUT_DIR = Path(__file__).parent.parent / "github_learning" / "data"
 EXPERIENCE_INDEX = Path(__file__).parent.parent / "coherent_engine" / "pipeline" / "experience_index.json"
@@ -195,15 +192,15 @@ def main():
         reason = "no degradation detected"
 
     # Print results
-    print(f"\n--- Group A (baseline, no injection) ---")
+    print("\n--- Group A (baseline, no injection) ---")
     print(f"  pass_rate: {group_a['pass_rate']}  avg_score: {group_a['avg_score']}  avg_attempts: {group_a['avg_attempts']}")
     print(f"  passed: {group_a['passed']}/{N}  auto_healed: {group_a['auto_healed']}")
 
-    print(f"\n--- Group B (manifest active injection) ---")
+    print("\n--- Group B (manifest active injection) ---")
     print(f"  pass_rate: {group_b['pass_rate']}  avg_score: {group_b['avg_score']}  avg_attempts: {group_b['avg_attempts']}")
     print(f"  passed: {group_b['passed']}/{N}  auto_healed: {group_b['auto_healed']}")
 
-    print(f"\n--- Lift ---")
+    print("\n--- Lift ---")
     print(f"  pass_rate:  {'+' if lift_pass_rate >= 0 else ''}{lift_pass_rate}")
     print(f"  avg_score:  {'+' if lift_avg_score >= 0 else ''}{lift_avg_score}")
     print(f"  avg_attempts saved: {'+' if lift_attempts >= 0 else ''}{lift_attempts}")

@@ -217,15 +217,15 @@ class AdaptiveThreshold:
 
     def _load_config(self) -> Dict:
         """加载配置文件"""
-        if THRESHOLD_CONFIG_FILE.exists():
-            with open(THRESHOLD_CONFIG_FILE, "r", encoding="utf-8") as f:
+        if self.config_file.exists():
+            with open(self.config_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         return {}
 
     def _save_config(self):
         """保存配置文件"""
-        THRESHOLD_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(THRESHOLD_CONFIG_FILE, "w", encoding="utf-8") as f:
+        self.config_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(self.config, f, ensure_ascii=False, indent=2)
 
 
@@ -247,7 +247,7 @@ def example_usage():
     ]
 
     threshold, window, cooldown = adaptive.get_threshold("agent-high-freq", high_freq_history)
-    print(f"高频 Agent:")
+    print("高频 Agent:")
     print(f"  失败阈值: {threshold}")
     print(f"  分析窗口: {window} 小时")
     print(f"  冷却期: {cooldown} 小时")
@@ -259,14 +259,14 @@ def example_usage():
     ]
 
     threshold, window, cooldown = adaptive.get_threshold("agent-low-freq", low_freq_history)
-    print(f"\n低频 Agent:")
+    print("\n低频 Agent:")
     print(f"  失败阈值: {threshold}")
     print(f"  分析窗口: {window} 小时")
     print(f"  冷却期: {cooldown} 小时")
 
     # 3. 关键 Agent
     threshold, window, cooldown = adaptive.get_threshold("agent-critical-monitor", [])
-    print(f"\n关键 Agent:")
+    print("\n关键 Agent:")
     print(f"  失败阈值: {threshold}")
     print(f"  分析窗口: {window} 小时")
     print(f"  冷却期: {cooldown} 小时")
@@ -281,14 +281,14 @@ def example_usage():
     )
 
     threshold, window, cooldown = adaptive.get_threshold("agent-custom", [])
-    print(f"\n手动配置 Agent:")
+    print("\n手动配置 Agent:")
     print(f"  失败阈值: {threshold}")
     print(f"  分析窗口: {window} 小时")
     print(f"  冷却期: {cooldown} 小时")
 
     # 5. 查看完整配置
     profile = adaptive.get_agent_profile("agent-high-freq", high_freq_history)
-    print(f"\nAgent 配置文件:")
+    print("\nAgent 配置文件:")
     print(f"  频率: {profile['frequency']}")
     print(f"  任务数/天: {profile['tasks_per_day']}")
     print(f"  是否关键: {profile['is_critical']}")

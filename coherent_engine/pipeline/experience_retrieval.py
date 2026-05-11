@@ -24,7 +24,6 @@ ExperienceRetrievalSkill — coherent_engine
 - 本地索引优先（JSON），EchoCore engine 作为扩展
 """
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -287,7 +286,7 @@ def decay_stale_experiences(max_idle_days: int = 30) -> int:
         if not last_seen:
             continue
         try:
-            from datetime import datetime, timezone
+            from datetime import datetime
             dt = datetime.fromisoformat(last_seen.replace("+00:00", "+00:00"))
             age_days = (now - dt.timestamp()) / 86400
         except (ValueError, TypeError):

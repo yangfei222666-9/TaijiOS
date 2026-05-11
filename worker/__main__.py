@@ -13,7 +13,7 @@ Usage:
     python -m worker --max-cycles 10          # stop after 10 cycles
     python -m worker --dry-run                # show what would run
 
-Status evidence: worker_data/worker_status.json (updated every cycle)
+Status evidence: data/worker/worker_status.json by default (updated every cycle)
 """
 import argparse
 import json
@@ -22,15 +22,30 @@ import os
 import signal
 import sys
 import time
-import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
-WORKER_DIR = Path(__file__).parent / "worker_data"
+
+def _default_worker_dir() -> Path:
+    configured = os.environ.get("TAIJIOS_WORKER_DATA_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path.cwd() / "data" / "worker"
+
+
+WORKER_DIR = _default_worker_dir()
 STATUS_FILE = WORKER_DIR / "worker_status.json"
 CYCLE_LOG = WORKER_DIR / "worker_cycles.jsonl"
 
 log = logging.getLogger("taijios.worker")
+
+
+def configure_worker_dir(data_dir: str | Path) -> None:
+    """Configure runtime evidence paths for worker status and cycle logs."""
+    global WORKER_DIR, STATUS_FILE, CYCLE_LOG
+    WORKER_DIR = Path(data_dir).expanduser()
+    STATUS_FILE = WORKER_DIR / "worker_status.json"
+    CYCLE_LOG = WORKER_DIR / "worker_cycles.jsonl"
 
 
 class WorkerStatus:
@@ -191,8 +206,9 @@ def _handle_signal(sig, frame):
     log.info("[worker] shutdown signal received, finishing current cycle...")
 
 
-def main():
+def main(argv=None):
     global _SHUTDOWN
+    _SHUTDOWN = False
 
     p = argparse.ArgumentParser(prog="worker", description="TaijiOS Persistent Worker")
     p.add_argument("--interval", type=int, default=3600, help="Seconds between cycles (default: 3600)")
@@ -201,7 +217,11 @@ def main():
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--skip-learning", action="store_true", help="Skip GitHub learning phase")
     p.add_argument("--skip-jobs", action="store_true", help="Skip job consumer phase")
-    args = p.parse_args()
+    p.add_argument("--skip-maintenance", action="store_true", help="Skip snapshot/report refresh after each cycle")
+    p.add_argument("--data-dir", default=str(_default_worker_dir()), help="Runtime evidence directory")
+    args = p.parse_args(argv)
+
+    configure_worker_dir(args.data_dir)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
@@ -258,31 +278,36 @@ def main():
         status.current_mode = "idle"
         status.save()
 
-        # Refresh experience quality report after each cycle
-        try:
-            from coherent_engine.pipeline.experience_retrieval import generate_report
-            generate_report(cycle_id=f"worker-cycle-{cycle}")
-            log.info("[worker] Experience quality report refreshed")
-        except Exception as e:
-            log.debug("[worker] Quality report skip: %s", e)
+        if not args.dry_run and not args.skip_maintenance:
+            # Refresh experience quality report after each cycle
+            try:
+                from coherent_engine.pipeline.experience_retrieval import generate_report
+                generate_report(cycle_id=f"worker-cycle-{cycle}")
+                log.info("[worker] Experience quality report refreshed")
+            except Exception as e:
+                log.debug("[worker] Quality report skip: %s", e)
 
-        # Refresh learning pipeline snapshot after each cycle
-        try:
-            from github_learning.learning_snapshot import generate_learning_snapshot
-            generate_learning_snapshot(cycle_id=f"worker-cycle-{cycle}")
-            log.info("[worker] Learning snapshot refreshed")
-        except Exception as e:
-            log.debug("[worker] Learning snapshot skip: %s", e)
+            # Refresh learning pipeline snapshot after each cycle
+            try:
+                from github_learning.learning_snapshot import generate_learning_snapshot
+                generate_learning_snapshot(cycle_id=f"worker-cycle-{cycle}")
+                log.info("[worker] Learning snapshot refreshed")
+            except Exception as e:
+                log.debug("[worker] Learning snapshot skip: %s", e)
 
-        # Auto-promote probation experiences that have proven themselves
-        try:
-            from github_learning.manifest import auto_promote, sync_to_index
-            promoted = auto_promote()
-            if promoted:
-                sync_to_index()
-                log.info("[worker] Auto-promoted %d experiences: %s", len(promoted), promoted)
-        except Exception as e:
-            log.debug("[worker] Auto-promote skip: %s", e)
+            # Auto-promote probation experiences that have proven themselves
+            try:
+                from github_learning.manifest import auto_promote, sync_to_index
+                promoted = auto_promote()
+                if promoted:
+                    sync_to_index()
+                    log.info("[worker] Auto-promoted %d experiences: %s", len(promoted), promoted)
+            except Exception as e:
+                log.debug("[worker] Auto-promote skip: %s", e)
+
+        if args.max_cycles > 0 and cycle >= args.max_cycles:
+            log.info("[worker] max_cycles=%d reached, stopping", args.max_cycles)
+            break
 
         log.info("[worker] Cycle %d done. Next in %ds. (Ctrl+C to stop)", cycle, args.interval)
 

@@ -9,9 +9,8 @@ Telegram Notifier - Self-Improving Loop 通知
 使用 OpenClaw 的 message 工具发送通知。
 """
 
-import json
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict
 
 
 class TelegramNotifier:
@@ -32,12 +31,12 @@ class TelegramNotifier:
         if not self.enabled:
             return
 
-        message = f"🔧 Self-Improving Loop\n\n"
+        message = "🔧 Self-Improving Loop\n\n"
         message += f"Agent: {agent_id}\n"
         message += f"应用了 {improvements_applied} 项自动改进\n"
         
         if details:
-            message += f"\n详情:\n"
+            message += "\n详情:\n"
             for key, value in details.items():
                 message += f"  • {key}: {value}\n"
         
@@ -57,7 +56,7 @@ class TelegramNotifier:
         if not self.enabled:
             return
 
-        message = f"⚠️ 自动回滚告警\n\n"
+        message = "⚠️ 自动回滚告警\n\n"
         message += f"Agent: {agent_id}\n"
         message += f"原因: {reason}\n"
         
@@ -65,13 +64,13 @@ class TelegramNotifier:
             before = metrics.get("before_metrics", {})
             after = metrics.get("after_metrics", {})
             
-            message += f"\n指标对比:\n"
+            message += "\n指标对比:\n"
             if "success_rate" in before:
                 message += f"  • 成功率: {before['success_rate']:.1%} → {after.get('success_rate', 0):.1%}\n"
             if "avg_duration_sec" in before:
                 message += f"  • 平均耗时: {before['avg_duration_sec']:.1f}s → {after.get('avg_duration_sec', 0):.1f}s\n"
         
-        message += f"\n已自动回滚到上一个配置"
+        message += "\n已自动回滚到上一个配置"
         message += f"\n时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
         self._send_message(message, priority="high")
@@ -86,7 +85,7 @@ class TelegramNotifier:
         if not self.enabled:
             return
 
-        message = f"📊 Self-Improving Loop 每日报告\n\n"
+        message = "📊 Self-Improving Loop 每日报告\n\n"
         message += f"总 Agent: {stats.get('total_agents', 0)}\n"
         message += f"总改进次数: {stats.get('total_improvements', 0)}\n"
         message += f"总回滚次数: {stats.get('total_rollbacks', 0)}\n"
@@ -120,17 +119,17 @@ class TelegramNotifier:
         if not self.enabled:
             return
 
-        message = f"⚙️ 自适应阈值调整\n\n"
+        message = "⚙️ 自适应阈值调整\n\n"
         message += f"Agent: {agent_id}\n"
         message += f"频率: {profile.get('frequency', 'unknown')}\n"
         message += f"任务数/天: {profile.get('tasks_per_day', 0)}\n"
-        message += f"\n新阈值:\n"
+        message += "\n新阈值:\n"
         message += f"  • 失败阈值: {profile.get('failure_threshold', 0)} 次\n"
         message += f"  • 分析窗口: {profile.get('analysis_window_hours', 0)} 小时\n"
         message += f"  • 冷却期: {profile.get('cooldown_hours', 0)} 小时\n"
         
         if profile.get('is_critical'):
-            message += f"\n⚠️ 关键任务 Agent"
+            message += "\n⚠️ 关键任务 Agent"
         
         message += f"\n时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 

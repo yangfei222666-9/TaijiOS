@@ -15,7 +15,6 @@
 import json, sys, io
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
 
 if __name__ == "__main__":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")

@@ -268,7 +268,7 @@ def example_usage():
 
     # 5. 查看统计
     stats = rollback.get_stats()
-    print(f"\n回滚统计:")
+    print("\n回滚统计:")
     print(f"  总回滚次数: {stats['total_rollbacks']}")
     print(f"  回滚 Agent 数: {stats['agents_rolled_back']}")
 

@@ -30,7 +30,6 @@ def _check_health() -> dict:
         return {"check": "health", "status": "FAIL", "reason": "health_latest.json missing"}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-        status = data.get("status", "unknown")
         checks = data.get("checks", {})
         has_real = any(v == "ok" for v in checks.values())
         if not has_real:

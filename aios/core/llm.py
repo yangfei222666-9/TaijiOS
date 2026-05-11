@@ -11,12 +11,9 @@ AIOS LLM 集成模块 v1.0
     response = llm.generate("你好")
 """
 
-import json
 import logging
-import subprocess
-from typing import Optional, Dict, Any, List
+from typing import Optional
 from dataclasses import dataclass
-from pathlib import Path
 import os
 
 log = logging.getLogger("aios.core.llm")

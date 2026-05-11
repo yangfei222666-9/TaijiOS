@@ -10,7 +10,7 @@ AIOS v0.6 EventBus - 系统心脏
 - 直接调用其他模块
 """
 import json
-import os
+import gzip
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 from collections import defaultdict
@@ -22,13 +22,86 @@ from .event import Event
 try:
     from aios.storage.event_store_adapter import EventStoreAdapter, get_event_store_adapter
 except ImportError:
-    # Fallback for direct execution
-    import sys
-    from pathlib import Path
-    AIOS_ROOT = Path(__file__).resolve().parent.parent
-    if str(AIOS_ROOT) not in sys.path:
-        sys.path.insert(0, str(AIOS_ROOT))
-    from storage.event_store_adapter import EventStoreAdapter, get_event_store_adapter
+    class EventStoreAdapter:
+        """Small JSONL event store used when the optional storage package is absent."""
+
+        def __init__(self, base_dir: Optional[Path] = None):
+            aios_root = Path(__file__).resolve().parent.parent
+            self.base_dir = base_dir or aios_root / "data" / "events"
+            self.archive_dir = self.base_dir / "archive"
+            self.base_dir.mkdir(parents=True, exist_ok=True)
+            self.archive_dir.mkdir(parents=True, exist_ok=True)
+
+        def _event_file(self) -> Path:
+            return self.base_dir / "events.jsonl"
+
+        def append(self, event: Event) -> None:
+            with self._event_file().open("a", encoding="utf-8") as f:
+                f.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+
+        def load_events(
+            self,
+            event_type: Optional[str] = None,
+            since: Optional[int] = None,
+            limit: Optional[int] = None,
+        ) -> List[Event]:
+            events: List[Event] = []
+            for path in sorted(self.base_dir.glob("*.jsonl")):
+                with path.open("r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            event = Event.from_dict(json.loads(line))
+                        except (json.JSONDecodeError, TypeError, ValueError):
+                            continue
+                        if event_type and not fnmatch.fnmatch(event.type, event_type):
+                            continue
+                        if since is not None and event.timestamp < since:
+                            continue
+                        events.append(event)
+
+            for path in sorted(self.archive_dir.glob("*.jsonl.gz")):
+                with gzip.open(path, "rt", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            event = Event.from_dict(json.loads(line))
+                        except (json.JSONDecodeError, TypeError, ValueError):
+                            continue
+                        if event_type and not fnmatch.fnmatch(event.type, event_type):
+                            continue
+                        if since is not None and event.timestamp < since:
+                            continue
+                        events.append(event)
+
+            events.sort(key=lambda event: event.timestamp)
+            return events[-limit:] if limit else events
+
+        def migrate_from_single_file(self, old_file: Path) -> int:
+            migrated = 0
+            with old_file.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        self.append(Event.from_dict(json.loads(line)))
+                        migrated += 1
+                    except (json.JSONDecodeError, TypeError, ValueError):
+                        continue
+            return migrated
+
+    _fallback_store: Optional[EventStoreAdapter] = None
+
+    def get_event_store_adapter() -> EventStoreAdapter:
+        global _fallback_store
+        if _fallback_store is None:
+            _fallback_store = EventStoreAdapter()
+        return _fallback_store
 
 
 class EventBus:

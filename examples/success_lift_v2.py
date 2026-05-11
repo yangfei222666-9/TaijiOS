@@ -9,15 +9,12 @@ Unlike v1 (simulated boost), v2 uses the REAL experience_retrieval module:
 Same job set, same seed, same validator. The only difference is whether
 the real retrieval chain fires and injects guidance.
 """
-import hashlib
 import json
-import os
 import random
-import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 OUTPUT_DIR = Path(__file__).parent.parent / "github_learning" / "data"
 
@@ -204,15 +201,15 @@ def main():
         reason = f"mixed: pass={lift_pass}, score={lift_score}, rounds={lift_attempts}"
 
     # Print
-    print(f"\n--- Group A (no retrieval) ---")
+    print("\n--- Group A (no retrieval) ---")
     print(f"  pass_rate: {group_a['pass_rate']}  avg_score: {group_a['avg_score']}  avg_attempts: {group_a['avg_attempts']}")
     print(f"  passed: {group_a['passed']}/{N}  auto_healed: {group_a['auto_healed']}")
 
-    print(f"\n--- Group B (real retrieval) ---")
+    print("\n--- Group B (real retrieval) ---")
     print(f"  pass_rate: {group_b['pass_rate']}  avg_score: {group_b['avg_score']}  avg_attempts: {group_b['avg_attempts']}")
     print(f"  passed: {group_b['passed']}/{N}  auto_healed: {group_b['auto_healed']}  experiences_hit: {group_b['experiences_hit']}")
 
-    print(f"\n--- Lift ---")
+    print("\n--- Lift ---")
     print(f"  pass_rate:  {'+' if lift_pass >= 0 else ''}{lift_pass}")
     print(f"  avg_score:  {'+' if lift_score >= 0 else ''}{lift_score}")
     print(f"  avg_attempts saved: {'+' if lift_attempts >= 0 else ''}{lift_attempts}")
@@ -255,7 +252,7 @@ def main():
         "evidence_paths": {
             "experience_index": "coherent_engine/pipeline/experience_index.json",
             "test_script": "examples/success_lift_v2.py",
-            "run_trace": f"github_learning/data/success_lift_v2_latest.json",
+            "run_trace": "github_learning/data/success_lift_v2_latest.json",
         },
     }
 

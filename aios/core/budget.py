@@ -26,7 +26,7 @@ import json
 import time
 from pathlib import Path
 from typing import Dict, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import sys
 

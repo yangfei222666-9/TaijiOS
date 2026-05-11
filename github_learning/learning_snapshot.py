@@ -70,7 +70,7 @@ def print_learning_snapshot(cycle_id: str = ""):
     p = snap["pipeline"]
     g = snap["gate"]
     m = snap["manifest"]
-    print(f"\n=== Learning Pipeline Snapshot ===")
+    print("\n=== Learning Pipeline Snapshot ===")
     print(f"  Generated: {snap['generated_at']}")
     print(f"  Pipeline: discovered={p['discovered']} analyzed={p['analyzed']} "
           f"digested={p['digested']} solidified={p['solidified']}")

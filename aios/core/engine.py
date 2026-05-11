@@ -14,7 +14,7 @@ v0.2 Schema:
 向后兼容: 旧的 log_event/log_tool_event 仍可用，自动映射到新 schema。
 """
 
-import json, time, os, sys
+import json, time, sys
 from pathlib import Path
 from datetime import datetime, timezone
 

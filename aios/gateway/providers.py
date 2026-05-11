@@ -4,17 +4,15 @@ Uses requests (sync, run in thread pool) to avoid adding httpx dependency.
 """
 from __future__ import annotations
 
-import json
 import logging
-import time
 import uuid
 import requests
-from typing import Generator, Optional
+from typing import Generator
 
 from .config import ProviderConfig
 from .schemas import (
     ChatCompletionRequest, ChatCompletionResponse, ChatCompletionChoice,
-    ChoiceMessage, UsageInfo, ChatCompletionChunk, StreamChoice, DeltaMessage,
+    ChoiceMessage, UsageInfo,
 )
 from .errors import ProviderError, ProviderTimeoutError, ProviderUnavailableError
 

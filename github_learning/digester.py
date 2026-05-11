@@ -4,11 +4,10 @@ Extracts structured lessons with idempotent keys.
 """
 import hashlib
 import json
-import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -41,7 +40,6 @@ def digest_analysis(analysis: Dict[str, Any]) -> List[DigestedMechanism]:
     full_name = analysis.get("full_name", "")
     mechanisms_text = analysis.get("q3_mechanisms", "")
     pitfalls_text = analysis.get("q2_pitfalls", "")
-    gate_text = analysis.get("q4_gate_plan", "")
     relevance = float(analysis.get("relevance_score", 0.0))
 
     # Split mechanisms text into individual items

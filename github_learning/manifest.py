@@ -11,7 +11,7 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 DATA_DIR = Path(__file__).parent / "data"
 MANIFEST_PATH = DATA_DIR / "reviewed_baseline_manifest.json"
@@ -157,20 +157,6 @@ def auto_promote(min_hits: int = 3, min_success_rate: float = 0.6) -> List[str]:
         _save_manifest(manifest)
 
     return promoted
-
-
-def revoke(mechanism_id: str, reason: str = "") -> bool:
-    """Revoke an entry (soft delete, keeps trace)."""
-    manifest = _load_manifest()
-    for e in manifest["entries"]:
-        if e["mechanism_id"] == mechanism_id:
-            e["admission_status"] = "revoked"
-            e["revoked_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-            e["revoke_reason"] = reason
-            _save_manifest(manifest)
-            return True
-    return False
-
 
 def sync_to_index() -> int:
     """

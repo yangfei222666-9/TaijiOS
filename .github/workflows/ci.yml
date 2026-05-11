@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install requests httpx numpy fastapi uvicorn
+        run: pip install -e ".[dev]"
       - name: Check core imports
         run: |
           python -c "from aios.core.event_bus import EventBus; print('OK: event_bus')"
@@ -50,10 +50,12 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          pip install pytest pytest-asyncio pytest-cov numpy opencv-python-headless edge-tts redis
-          pip install -e . 2>/dev/null || true
+          pip install -e ".[dev]"
       - name: Run tests
-        run: python -m pytest coherent_engine/tests/ -q --tb=short
-      - name: Coverage check
-        run: |
-          python -m pytest coherent_engine/tests/ -q --cov=coherent_engine --cov-report=term-missing --cov-fail-under=65
+        run: python -m pytest tests/ -q --tb=short
+      - name: Run UI-TARS ops-check gate
+        run: python -m aios.gui_agent.ops_check_gate
+      - name: Validate UI-TARS ops-check summary
+        run: python examples/validate_gui_agent_ops_check.py
+      - name: Run project health verifier
+        run: python scripts/verify_project_health.py --skip-tests

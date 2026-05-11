@@ -13,12 +13,13 @@ Run:
 """
 import hashlib
 import json
+import os
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-OUTPUT_DIR = Path(__file__).parent / "quickstart_output"
+OUTPUT_DIR = Path(os.getenv("TAIJIOS_QUICKSTART_OUTPUT_DIR", Path.cwd() / "data" / "quickstart_output"))
 
 
 # ── 1. Event Bus (simplified core) ─────────────────────────────
@@ -200,7 +201,7 @@ def run_pipeline(task: Task, bus: EventBus) -> dict:
 
 def main():
     print("=" * 60)
-    print("  TaijiOS Quickstart — No Ollama Required")
+    print("  TaijiOS Quickstart - No Ollama Required")
     print("=" * 60)
 
     # Setup

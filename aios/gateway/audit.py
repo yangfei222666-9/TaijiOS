@@ -8,13 +8,10 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from .auth import CallerIdentity
-from .reason_codes import GRC
 
 log = logging.getLogger("gateway.audit")
 
@@ -153,7 +150,6 @@ def daily_summary(date_str: str = "") -> dict:
     Returns: {date, total_requests, total_errors, total_tokens, by_model, by_caller, avg_latency_ms}
     """
     from collections import defaultdict
-    from datetime import date as _date
 
     target = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 

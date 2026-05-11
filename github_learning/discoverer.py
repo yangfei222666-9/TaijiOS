@@ -2,11 +2,10 @@
 GitHub Learning Pipeline — Discover repos via GitHub Search API.
 Rotating daily topics, rate-limit aware, dedup by full_name.
 """
-import hashlib
 import json
 import os
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional

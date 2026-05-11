@@ -260,7 +260,7 @@ if __name__ == "__main__":
     print("Logging with exception:")
     try:
         raise ValueError("Something went wrong")
-    except Exception as e:
+    except Exception:
         logger.error("Task failed", error_type="ValueError", exc_info=True)
     print()
     

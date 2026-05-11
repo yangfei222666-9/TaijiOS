@@ -10,7 +10,7 @@ AIOS_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(AIOS_ROOT))
 
 from core.skill_manager import get_skill_manager
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 class SkillIntegration:

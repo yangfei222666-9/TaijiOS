@@ -3,7 +3,6 @@ Durable Task Queue with atomic state transitions and crash recovery.
 """
 from __future__ import annotations
 import json
-import os
 import platform
 import threading
 import time

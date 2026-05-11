@@ -17,7 +17,7 @@ import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import hashlib
 
 
@@ -402,7 +402,7 @@ def demo():
     mem1 = manager.store("实现了 Planning 模块，支持 CoT 任务拆解", importance=0.9)
     mem2 = manager.store("修复了一个小 bug", importance=0.3)
     mem3 = manager.store("设计了 Memory 模块的架构，包含向量检索和记忆分层", importance=0.9)
-    print(f"已存储 3 条记忆")
+    print("已存储 3 条记忆")
     print(f"- 记忆1: {mem1.content[:30]}... (重要性: {mem1.importance})")
     print(f"- 记忆2: {mem2.content[:30]}... (重要性: {mem2.importance})")
     print(f"- 记忆3: {mem3.content[:30]}... (重要性: {mem3.importance})")

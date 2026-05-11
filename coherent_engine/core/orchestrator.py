@@ -1,7 +1,15 @@
 # core/orchestrator.py
-import asyncio
 from typing import Dict, Any, List, Set
-from coherent_engine.modules.base import BaseModule
+try:
+    from coherent_engine.modules.base import BaseModule
+except ModuleNotFoundError:
+    class BaseModule:
+        """Minimal module protocol used when optional coherent_engine.modules is absent."""
+
+        name: str
+
+        async def process(self, input_data: Any, config: Dict[str, Any], context: Dict[str, Any]) -> Any:
+            raise NotImplementedError
 
 class ModuleOrchestrator:
     """

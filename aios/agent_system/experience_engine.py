@@ -97,7 +97,7 @@ def harvest_real_failures():
         
         print(f"[OK] Harvested {len(new_lessons)} real failures → {LESSONS_PATH}")
     else:
-        print(f"[OK] No new failures to harvest")
+        print("[OK] No new failures to harvest")
     
     return len(new_lessons)
 

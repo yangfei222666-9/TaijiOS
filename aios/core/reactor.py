@@ -9,11 +9,9 @@ v0.6.1 新增：
 - 剧本成功率统计 + 动态冷却（失败多→冷却拉长）
 """
 
-import json, sys, io, time, subprocess, uuid
+import json, sys, io, subprocess, uuid
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional
-from contextlib import contextmanager
 
 # 跨平台文件锁
 try:
@@ -41,12 +39,19 @@ DATA_DIR = AIOS_ROOT / "data"
 REACTION_LOG = DATA_DIR / "reactions.jsonl"
 FUSE_FILE = DATA_DIR / "reactor_fuse.json"
 PLAYBOOK_STATS_FILE = DATA_DIR / "playbook_stats.json"
-PYTHON = r"sys.executable"
+PYTHON = sys.executable
 
 sys.path.insert(0, str(AIOS_ROOT))
 
-from core.playbook import find_matching_playbooks, record_cooldown, load_playbooks
-from core.decision_log import log_decision, update_outcome
+from core.playbook import find_matching_playbooks, record_cooldown
+try:
+    from core.decision_log import log_decision, update_outcome
+except ImportError:
+    def log_decision(context, options, chosen, reason, confidence):
+        return uuid.uuid4().hex
+
+    def update_outcome(decision_id, outcome):
+        return None
 
 # ── 全局熔断配置 ──
 FUSE_WINDOW_MIN = 30  # 熔断窗口：30 分钟

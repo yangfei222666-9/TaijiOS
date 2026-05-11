@@ -11,7 +11,6 @@ Author: 小九 + 珊瑚海
 Date: 2026-02-26
 """
 
-import json
 import time
 from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass, asdict
@@ -289,7 +288,7 @@ if __name__ == "__main__":
             print(f"  → 选择工具: {tool.name}")
         else:
             print(f"任务: {task}")
-            print(f"  → 没有匹配的工具")
+            print("  → 没有匹配的工具")
     
     print("\n=== 测试工具执行 ===")
     

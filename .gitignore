@@ -15,12 +15,15 @@ data/
 lancedb_data/
 lancedb_store/
 lancedb_memory*/
+runs/test_tmp/
 
 # Tracked cross-machine evidence artifacts
 !runs/
 !runs/cross_machine_handoff/
 !runs/cross_machine_handoff/**/
 !runs/cross_machine_handoff/**/event_flow.jsonl
+runs/ops_check/
+runs/iching/
 
 # Python
 __pycache__/

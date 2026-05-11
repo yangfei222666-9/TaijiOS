@@ -18,10 +18,8 @@ Experience Learner v4.0 - Phase 3 生产版（含灰度 + 幂等 + 版本归因�
 import json
 import hashlib
 import random
-import time
 from pathlib import Path
 from datetime import datetime
-from collections import defaultdict
 
 # ── 配置 ──────────────────────────────────────────────────────────────────────
 # Import unified paths

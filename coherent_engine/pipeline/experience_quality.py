@@ -10,14 +10,13 @@ Usage:
 """
 import argparse
 import json
-import sys
 
 
 def cmd_report(args):
     from coherent_engine.pipeline.experience_retrieval import generate_report
     report = generate_report(cycle_id=args.cycle_id, sample_window=args.sample_window)
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    print(f"\nWritten to: experience_quality_latest.json")
+    print("\nWritten to: experience_quality_latest.json")
     print(f"  total={report['total']}  active={report['active']}  quarantined={report['quarantined']}  "
           f"expired={report['expired']}  decayed={report['decayed']}  rollback_candidates={len(report['rollback_candidates'])}")
 

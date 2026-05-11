@@ -10,7 +10,6 @@ Usage:
     python -m github_learning auto [--limit N]
 """
 import argparse
-import sys
 
 
 def main():

@@ -18,7 +18,20 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from aios.agent_system.config_center import openclaw_workspace_root, skills_root
+try:
+    from aios.agent_system.config_center import openclaw_workspace_root, skills_root
+except ModuleNotFoundError:
+    def openclaw_workspace_root():
+        configured = os.environ.get("TAIJIOS_WORKSPACE")
+        if configured:
+            return Path(os.path.expandvars(configured)).expanduser()
+        return Path(__file__).resolve().parents[2]
+
+    def skills_root():
+        configured = os.environ.get("TAIJIOS_SKILLS_DIR")
+        if configured:
+            return Path(os.path.expandvars(configured)).expanduser()
+        return openclaw_workspace_root() / "skills"
 
 WORKSPACE = openclaw_workspace_root()
 REGISTRY_PATH = WORKSPACE / "aios" / "agent_system" / "unified_registry.json"
@@ -31,6 +44,9 @@ OLD_DATA_AGENTS = WORKSPACE / "aios" / "agent_system" / "data" / "agents.json"
 def scan_skills():
     """扫描所有 Skill 目录，提取元数据"""
     skills = {}
+    if not SKILLS_DIR.exists():
+        return skills
+
     for skill_dir in SKILLS_DIR.iterdir():
         if not skill_dir.is_dir():
             continue
@@ -133,7 +149,6 @@ def deduplicate_agents(agents):
     for aid, agent in agents.items():
         template = agent.get("template", agent.get("type", "unknown")).lower()
         name = agent.get("name", "").lower()
-        goal = agent.get("goal", "")[:50].lower()
         skill_path = agent.get("skill_path", "")
         
         # Skill-based agent 用 skill_path 做 key（每个 Skill 独立）
@@ -322,7 +337,7 @@ def main():
     print(f"  Agents (archived):{stats['total_agents_archived']}")
     print(f"  Agents with tasks:{stats['agents_with_tasks']}")
     print(f"  Agents zero tasks:{stats['agents_zero_tasks']}")
-    print(f"\n  Categories:")
+    print("\n  Categories:")
     for cat, items in registry["categories"].items():
         print(f"    {cat}: {', '.join(items)}")
     print("\nDone!")
