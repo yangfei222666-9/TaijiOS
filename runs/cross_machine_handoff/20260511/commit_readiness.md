@@ -2,7 +2,7 @@
 
 Created: 2026-05-11T01:33:06+08:00
 
-Last updated: 2026-05-11T18:43:57+08:00
+Last updated: 2026-05-11T19:30:01+08:00
 
 Machine: win11
 
@@ -20,13 +20,20 @@ Pushed branch:
 
 `https://github.com/yangfei222666-9/TaijiOS/tree/codex/taijios-project-bugfix-20260511-fulltree`
 
-Head commit:
+Pushed head when this packet was updated after remote clone verification:
 
-`96235c8d935a7e19741ef6c9636729e84706ad4f`
+`c830f8981cedf0765b57af22f07860e72421166f`
 
 Push note:
 
 The remote repository was archived/read-only. It was temporarily unarchived for the branch push and then re-archived. Final remote state checked with GitHub API: `archived=true`, `default_branch=main`.
+
+Remote clean-clone verification:
+
+- `git clone --single-branch --branch codex/taijios-project-bugfix-20260511-fulltree https://github.com/yangfei222666-9/TaijiOS.git %TEMP%\taijios_remote_verify\verify_20260511_192930` succeeded.
+- The cloned branch resolved to `c830f8981cedf0765b57af22f07860e72421166f`.
+- `runs/cross_machine_handoff/20260511/event_flow.jsonl` parsed with 44 JSONL events in the clone.
+- `python scripts\verify_project_health.py --skip-tests` passed inside the clean clone with `checks_run=13`, `checks_failed=0`.
 
 Latest verification:
 

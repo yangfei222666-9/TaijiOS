@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-05-11T18:43:57+08:00",
+  "created_at": "2026-05-11T19:30:01+08:00",
   "machine": "win11",
   "actor": "codex",
   "repo": "TaijiOS",
@@ -114,6 +114,12 @@
       "command": "gh repo unarchive yangfei222666-9/TaijiOS --yes; git push -u origin codex/taijios-project-bugfix-20260511-fulltree; gh repo archive yangfei222666-9/TaijiOS --yes; git ls-remote --heads origin codex/taijios-project-bugfix-20260511-fulltree; gh api repos/yangfei222666-9/TaijiOS",
       "status": "pass",
       "evidence": "Pushed branch codex/taijios-project-bugfix-20260511-fulltree at 96235c8d935a7e19741ef6c9636729e84706ad4f. Remote repository was temporarily unarchived for the push and then re-archived; final remote state archived=true and default_branch=main. No PR was created because origin/main is a legacy redirect branch and cherry-picking the full-tree work onto it produced broad modify/delete conflicts."
+    },
+    {
+      "name": "remote_clean_clone_verification",
+      "command": "git clone --single-branch --branch codex/taijios-project-bugfix-20260511-fulltree https://github.com/yangfei222666-9/TaijiOS.git %TEMP%\\taijios_remote_verify\\verify_20260511_192930; python scripts\\verify_project_health.py --skip-tests",
+      "status": "pass",
+      "evidence": "Clean clone from GitHub resolved HEAD c830f8981cedf0765b57af22f07860e72421166f. Handoff JSON parsed successfully with event_flow.jsonl event_lines=44. Clone-local verifier passed with checks_run=13, checks_failed=0, imported_candidates_all=102, compile_errors=0, tracked_json_failures=0/28, handoff_parse_failures=0/4, secret_literal_findings=0, pyflakes_high_signal_findings=0, GUI ops-check green, DeepSeek dry-run and validator green, worker dry-run green."
     }
   ],
   "unverified": [
@@ -125,5 +131,5 @@
     "DeepSeek I Ching runtime artifacts under ignored runs/iching/** were not staged.",
     "No pull request was created because origin/main is not a clean base for this full-tree branch."
   ],
-  "next_required_action": "Mac or another reviewer should fetch codex/taijios-project-bugfix-20260511-fulltree, verify commit 96235c8d935a7e19741ef6c9636729e84706ad4f and rerun scripts/verify_project_health.py before any mainline merge decision."
+  "next_required_action": "Mac or another reviewer should fetch codex/taijios-project-bugfix-20260511-fulltree, verify the current branch head, and rerun scripts/verify_project_health.py before any mainline merge decision."
 }
