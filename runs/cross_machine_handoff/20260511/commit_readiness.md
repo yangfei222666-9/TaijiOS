@@ -2,7 +2,7 @@
 
 Created: 2026-05-11T01:33:06+08:00
 
-Last updated: 2026-05-11T18:18:43+08:00
+Last updated: 2026-05-11T18:34:15+08:00
 
 Machine: win11
 
@@ -14,11 +14,11 @@ Ref: master local working tree
 
 ## Status
 
-Ready for human review before staging. No commit, push, or PR has been created.
+Local commits have been created. Push or PR creation was still pending when this packet was updated.
 
 Latest verification:
 
-- `python -m pytest tests\test_deepseek_iching_runner.py -q --tb=short` passed with 13 tests, including DeepSeek key whitespace handling and PowerShell helper regression coverage.
+- `python -m pytest tests\test_deepseek_iching_runner.py -q --tb=short` passed with 15 tests, including DeepSeek key whitespace handling, PowerShell helper regression coverage, and latest live output pointer coverage.
 - `python -m pytest tests\test_gui_agent_events.py tests\test_gui_agent_poc.py tests\test_deepseek_iching_runner.py -q --tb=short` passed with 22 tests after adding GUI event/confirmation-log redaction coverage and DeepSeek output-dir collision coverage.
 - `python -m pytest tests\test_core_smoke.py -q --tb=short` passed with 13 tests after adding coverage for repeated `worker.main(argv)` calls after `_SHUTDOWN=True` and for `health_check.main()` when `agents.json` is absent.
 - `python -m pytest tests\test_browser_adapter.py tests\test_playwright_browser_adapter.py tests\test_browser_readonly_task.py tests\test_browser_readonly_validation.py tests\test_ops_check_validation.py -q --tb=short` passed with 32 tests after browser read-only allowlist hardening.
@@ -27,7 +27,7 @@ Latest verification:
 - `python examples\deepseek_iching_64.py` passed in dry-run mode with 64 completed hexagrams, 0 errors, 0 API calls, and a unique `runs/iching/deepseek_iching_64_<timestamp>_<microseconds>_<pid>_<nonce>/**` output directory.
 - `python examples\validate_deepseek_iching_64.py` passed by resolving `runs/iching/latest_output_dir.txt` and checking the latest unique run artifacts.
 - Latest dry-run `event_flow.jsonl` had 64 `hexagram.completed` events, 0 `deepseek.*` live request events, and 0 live-flag mismatches. Validator now rejects mixed dry-run/live event_flow artifacts.
-- `python scripts\verify_project_health.py` passed without manual `TMP/TEMP` overrides with 101 tests, 102 import candidates, 136 Python files compiled, 26 tracked JSON/JSONL files parsed, 4 handoff files parsed, 174 files checked by secret-literal scan with 0 findings, GUI ops-check gate + validator green, DeepSeek I Ching dry-run + validator green, worker dry-run green, and 0 pyflakes findings.
+- `python scripts\verify_project_health.py` passed without manual `TMP/TEMP` overrides with 103 tests, 102 import candidates, 136 Python files compiled, 28 tracked JSON/JSONL files parsed, 4 handoff files parsed, 174 files checked by secret-literal scan with 0 findings, GUI ops-check gate + validator green, DeepSeek I Ching dry-run + validator green, worker dry-run green, and 0 pyflakes findings.
 - `python scripts\verify_project_health.py --skip-tests` passed with 13 checks and 0 failures, including the new secret-literal scan.
 - `python -m pytest tests\test_browser_adapter.py tests\test_browser_readonly_task.py tests\test_browser_readonly_validation.py tests\test_ops_check_validation.py tests\test_playwright_browser_adapter.py tests\test_policy_matrix.py tests\test_shadow_mode_browser_poc.py -q --tb=short` passed with 36 tests after fake secret fixtures were changed to runtime-composed strings.
 - Strict changed-file secret scan returned no findings after removing continuous fake secret literals from GUI/browser fixtures.
@@ -40,6 +40,7 @@ Latest verification:
 - `git check-ignore -v runs\iching\latest_output_dir.txt` confirmed generated I Ching runtime artifacts and the latest-run pointer are ignored by `.gitignore`.
 - PowerShell parser validation passed for `scripts\run_deepseek_iching_live.ps1` and `scripts\save_deepseek_key_dpapi.ps1`; no hardcoded secret literal was found by the verifier secret scan.
 - DeepSeek live helper now fails closed on runner or validator failure via `Invoke-NativeChecked`; the DPAPI key store writes `data/secrets/deepseek_api_key.dpapi` with `-NoNewline`, and the live helper trims encrypted text before decrypting it.
+- DeepSeek validator now has a `--live` path that resolves `runs/iching/latest_live_output_dir.txt` or discovers the latest completed live summary, so a later dry-run does not mask the latest successful live artifact.
 - `python examples\deepseek_iching_64.py --live` without `DEEPSEEK_API_KEY` returned `exit_code=2` and did not perform a live API call.
 - `git add -n` passed for all four proposed staging groups. Dry-run coverage: group 1 = 56 files, group 2 = 46 files, group 3 = 6 files, group 4 = 8 files; union = 116 files, current changed files = 116, missing = 0, extra = 0.
 - Final pre-staging dry-run recheck passed: group 1 = 56 files, group 2 = 46 files, group 3 = 6 files, group 4 = 8 files; union = 116 files, current changed files = 116, missing = 0, extra = 0, cached = 0.

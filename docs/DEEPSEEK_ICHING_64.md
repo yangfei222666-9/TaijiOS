@@ -8,6 +8,7 @@ runs/iching/deepseek_iching_64_YYYYMMDD_HHMMSS_mmmmmm_<pid>_<nonce>/event_flow.j
 runs/iching/deepseek_iching_64_YYYYMMDD_HHMMSS_mmmmmm_<pid>_<nonce>/iching_64_report.md
 runs/iching/deepseek_iching_64_YYYYMMDD_HHMMSS_mmmmmm_<pid>_<nonce>/hexagrams/*.json
 runs/iching/latest_output_dir.txt
+runs/iching/latest_live_output_dir.txt
 ```
 
 Dry-run mode does not call DeepSeek:
@@ -21,7 +22,7 @@ Live mode requires `DEEPSEEK_API_KEY`:
 
 ```bash
 python examples/deepseek_iching_64.py --live
-python examples/validate_deepseek_iching_64.py
+python examples/validate_deepseek_iching_64.py --live
 ```
 
 To avoid repeatedly pasting the key, store it locally with Windows DPAPI:
@@ -45,8 +46,10 @@ powershell -ExecutionPolicy Bypass -File scripts\run_deepseek_iching_live.ps1 -F
 
 By default each run writes to a unique timestamp, microseconds, pid and nonce
 directory. The validator reads `runs/iching/latest_output_dir.txt` when no
-output directory is provided. Pass `--output-dir` to intentionally resume or
-validate a specific directory.
+output directory is provided. Use `--live` to validate the latest completed live
+run through `runs/iching/latest_live_output_dir.txt`; if that pointer is absent,
+the validator scans `runs/iching/` for the latest successful live summary.
+Pass `--output-dir` to intentionally resume or validate a specific directory.
 
 Resume is enabled by default. Completed per-hexagram JSON files are reused when
 the cache key matches the model, mode, temperature, max tokens and prompt hash.

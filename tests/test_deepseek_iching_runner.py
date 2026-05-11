@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+import pytest
+
+import aios.iching.deepseek_runner as deepseek_runner
 from aios.iching.deepseek_runner import (
     DeepSeekChatClient,
     DeepSeekIchingRunner,
@@ -12,6 +15,27 @@ from aios.iching.deepseek_runner import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(autouse=True)
+def isolate_deepseek_latest_pointers(tmp_path, monkeypatch):
+    runs_root = tmp_path / "isolated_runs" / "iching"
+    monkeypatch.setattr(deepseek_runner, "RUNS_ROOT", runs_root)
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_OUTPUT_POINTER",
+        runs_root / "latest_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_LIVE_OUTPUT_POINTER",
+        runs_root / "latest_live_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LEGACY_OUTPUT_DIR",
+        runs_root / "deepseek_iching_64_20260511",
+    )
 
 
 class FakeDeepSeekClient:
@@ -98,6 +122,74 @@ def test_deepseek_iching_default_output_dir_is_unique():
     assert second.name.startswith("deepseek_iching_64_")
 
 
+def test_deepseek_iching_live_pointer_survives_later_dry_run(tmp_path, monkeypatch):
+    runs_root = tmp_path / "runs" / "iching"
+    monkeypatch.setattr(deepseek_runner, "RUNS_ROOT", runs_root)
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_OUTPUT_POINTER",
+        runs_root / "latest_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_LIVE_OUTPUT_POINTER",
+        runs_root / "latest_live_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LEGACY_OUTPUT_DIR",
+        runs_root / "deepseek_iching_64_20260511",
+    )
+
+    live_result = DeepSeekIchingRunner(
+        output_dir=runs_root / "live",
+        live=True,
+        client=FakeDeepSeekClient(),
+    ).run()
+    dry_result = DeepSeekIchingRunner(output_dir=runs_root / "dry").run()
+
+    assert deepseek_runner.LATEST_OUTPUT_POINTER.read_text(encoding="utf-8") == str(
+        dry_result.output_dir.resolve()
+    )
+    assert deepseek_runner.LATEST_LIVE_OUTPUT_POINTER.read_text(encoding="utf-8") == str(
+        live_result.output_dir.resolve()
+    )
+    assert deepseek_runner.resolve_latest_output_dir() == dry_result.output_dir.resolve()
+    assert deepseek_runner.resolve_latest_output_dir(live=True) == live_result.output_dir.resolve()
+
+
+def test_deepseek_iching_live_resolution_discovers_completed_run(tmp_path, monkeypatch):
+    runs_root = tmp_path / "runs" / "iching"
+    monkeypatch.setattr(deepseek_runner, "RUNS_ROOT", runs_root)
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_OUTPUT_POINTER",
+        runs_root / "latest_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LATEST_LIVE_OUTPUT_POINTER",
+        runs_root / "latest_live_output_dir.txt",
+    )
+    monkeypatch.setattr(
+        deepseek_runner,
+        "LEGACY_OUTPUT_DIR",
+        runs_root / "deepseek_iching_64_20260511",
+    )
+
+    live_result = DeepSeekIchingRunner(
+        output_dir=runs_root / "live",
+        live=True,
+        client=FakeDeepSeekClient(),
+    ).run()
+    deepseek_runner.LATEST_LIVE_OUTPUT_POINTER.unlink()
+
+    assert deepseek_runner.resolve_latest_output_dir(live=True) == live_result.output_dir
+    assert deepseek_runner.LATEST_LIVE_OUTPUT_POINTER.read_text(encoding="utf-8") == str(
+        live_result.output_dir.resolve()
+    )
+
+
 def test_deepseek_iching_live_uses_client_for_each_hexagram(tmp_path):
     client = FakeDeepSeekClient()
     result = DeepSeekIchingRunner(
@@ -178,6 +270,21 @@ def test_deepseek_iching_retries_transient_failure(tmp_path):
     assert len(client.calls) == 1
     assert result.summary["retry_count"] == 1
     assert result.summary["api_call_count"] == 2
+
+
+def test_deepseek_iching_partial_live_run_does_not_update_live_pointer(tmp_path):
+    result = DeepSeekIchingRunner(
+        output_dir=tmp_path / "run",
+        live=True,
+        client=FakeDeepSeekClient(),
+        hexagrams=YIJING_HEXAGRAMS[:1],
+    ).run()
+
+    assert result.ok is True
+    assert deepseek_runner.LATEST_OUTPUT_POINTER.read_text(encoding="utf-8") == str(
+        result.output_dir.resolve()
+    )
+    assert not deepseek_runner.LATEST_LIVE_OUTPUT_POINTER.exists()
 
 
 def test_validate_iching_run_rejects_missing_hexagram(tmp_path):

@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNS_ROOT = REPO_ROOT / "runs" / "iching"
 LEGACY_OUTPUT_DIR = RUNS_ROOT / "deepseek_iching_64_20260511"
 LATEST_OUTPUT_POINTER = RUNS_ROOT / "latest_output_dir.txt"
+LATEST_LIVE_OUTPUT_POINTER = RUNS_ROOT / "latest_live_output_dir.txt"
 DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 HEXAGRAM_CACHE_DIRNAME = "hexagrams"
@@ -214,16 +215,67 @@ def default_output_dir() -> Path:
     return RUNS_ROOT / f"deepseek_iching_64_{stamp}_{os.getpid()}_{nonce}"
 
 
-def write_latest_output_dir(output_dir: str | Path) -> None:
+def _read_output_pointer(path: Path) -> Path | None:
+    if not path.exists():
+        return None
+    raw = path.read_text(encoding="utf-8").strip()
+    if not raw:
+        return None
+    return Path(raw)
+
+
+def _is_completed_live_run(output_dir: Path) -> bool:
+    summary_path = output_dir / "summary.json"
+    if not summary_path.exists():
+        return False
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        summary.get("live") is True
+        and summary.get("completed_count") == len(YIJING_HEXAGRAMS)
+        and summary.get("error_count") == 0
+    )
+
+
+def _find_latest_completed_live_output_dir() -> Path | None:
+    if not RUNS_ROOT.exists():
+        return None
+    for output_dir in sorted(
+        (path for path in RUNS_ROOT.iterdir() if path.is_dir()),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    ):
+        if _is_completed_live_run(output_dir):
+            return output_dir
+    return None
+
+
+def write_latest_output_dir(output_dir: str | Path, *, live: bool = False) -> None:
     RUNS_ROOT.mkdir(parents=True, exist_ok=True)
-    LATEST_OUTPUT_POINTER.write_text(str(Path(output_dir).resolve()), encoding="utf-8")
+    resolved_output_dir = Path(output_dir).resolve()
+    LATEST_OUTPUT_POINTER.write_text(str(resolved_output_dir), encoding="utf-8")
+    if live:
+        LATEST_LIVE_OUTPUT_POINTER.write_text(str(resolved_output_dir), encoding="utf-8")
 
 
-def resolve_latest_output_dir() -> Path:
-    if LATEST_OUTPUT_POINTER.exists():
-        raw = LATEST_OUTPUT_POINTER.read_text(encoding="utf-8").strip()
-        if raw:
-            return Path(raw)
+def resolve_latest_output_dir(*, live: bool = False) -> Path:
+    if live:
+        latest_live = _read_output_pointer(LATEST_LIVE_OUTPUT_POINTER)
+        if latest_live is not None and _is_completed_live_run(latest_live):
+            return latest_live
+        discovered_live = _find_latest_completed_live_output_dir()
+        if discovered_live is not None:
+            RUNS_ROOT.mkdir(parents=True, exist_ok=True)
+            LATEST_LIVE_OUTPUT_POINTER.write_text(
+                str(discovered_live.resolve()),
+                encoding="utf-8",
+            )
+            return discovered_live
+    latest = _read_output_pointer(LATEST_OUTPUT_POINTER)
+    if latest is not None:
+        return latest
     return LEGACY_OUTPUT_DIR
 
 
@@ -349,7 +401,13 @@ class DeepSeekIchingRunner:
             "summary": str(summary_path),
             "secret_detected": summary["secret_detected"],
         })
-        write_latest_output_dir(self.output_dir)
+        completed_full_live_run = (
+            self.live
+            and summary["ok"] is True
+            and summary["completed_count"] == len(YIJING_HEXAGRAMS)
+            and summary["error_count"] == 0
+        )
+        write_latest_output_dir(self.output_dir, live=completed_full_live_run)
         return IchingRunResult(
             ok=summary["ok"],
             output_dir=self.output_dir,
