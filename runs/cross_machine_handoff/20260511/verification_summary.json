@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-05-11T18:18:43+08:00",
+  "machine": "win11",
+  "actor": "codex",
+  "repo": "TaijiOS",
+  "git_ref": "master local",
+  "status": "pass",
+  "checks": [
+    {
+      "name": "project_health_verifier_full",
+      "command": "python scripts\\verify_project_health.py",
+      "status": "pass",
+      "evidence": "checks_run=14; checks_failed=0; pytest=101 passed; imported_candidates_all=102; import_failures=0; python_files_all=136; compile_errors=0; tracked_json_failures=0/26; handoff_parse_failures=0/4; secret_literal_files_checked=174; secret_literal_findings=0; pyflakes_findings_total=0; pyflakes_high_signal_findings=0; gui_agent_ops_check_gate=pass; gui_agent_ops_check_validate=pass; deepseek_iching_dry_run=pass; deepseek_iching_validate=pass; worker_dry_run=pass; no manual TMP/TEMP override required"
+    },
+    {
+      "name": "project_health_verifier_ci_path",
+      "command": "python scripts\\verify_project_health.py --skip-tests",
+      "status": "pass",
+      "evidence": "checks_run=13; checks_failed=0; imported_candidates_all=102; import_failures=0; python_files_all=136; compile_errors=0; tracked_json_failures=0/26; handoff_parse_failures=0/4; secret_literal_files_checked=174; secret_literal_findings=0; pyflakes_findings_total=0; pyflakes_high_signal_findings=0; deepseek_iching_dry_run=pass; deepseek_iching_validate=pass"
+    },
+    {
+      "name": "deepseek_iching_runner_targeted",
+      "command": "python -m pytest tests\\test_deepseek_iching_runner.py -q --tb=short && python examples\\deepseek_iching_64.py && python examples\\validate_deepseek_iching_64.py",
+      "status": "pass",
+      "evidence": "13 tests passed; dry-run completed 64 hexagrams with error_count=0, api_call_count=0, secret_detected=false; default run wrote a unique runs/iching/deepseek_iching_64_<timestamp>_<microseconds>_<pid>_<nonce> directory; validator resolved latest_output_dir.txt and returned ok=true for summary/event_flow/report/hexagram cache artifacts"
+    },
+    {
+      "name": "deepseek_live_helper_fail_closed",
+      "command": "python -m pytest tests\\test_deepseek_iching_runner.py -q --tb=short; PowerShell Parser.ParseFile for scripts\\run_deepseek_iching_live.ps1 and scripts\\save_deepseek_key_dpapi.ps1; python examples\\deepseek_iching_64.py --live without DEEPSEEK_API_KEY",
+      "status": "pass",
+      "evidence": "PowerShell helper now checks native python exit codes with Invoke-NativeChecked, trims DPAPI encrypted key text, and writes stored key with -NoNewline. Targeted DeepSeek tests passed with 13 tests; PowerShell parser passed; missing DEEPSEEK_API_KEY live mode returned exit_code=2 without a live API call."
+    },
+    {
+      "name": "pytest_temp_isolation",
+      "command": "python scripts\\verify_project_health.py",
+      "status": "pass",
+      "evidence": "Project verifier now passes pytest a unique --basetemp under data/test_tmp/pytest-<pid>-<time_ns>; pyproject no longer pins cache_dir to data/pytest_cache, avoiding Win11 cache permission warnings."
+    },
+    {
+      "name": "worker_shutdown_reset",
+      "command": "python -m pytest tests\\test_core_smoke.py -q --tb=short && python -m worker --max-cycles 1 --interval 999 --dry-run --skip-learning --skip-jobs --data-dir data\\worker_smoke",
+      "status": "pass",
+      "evidence": "worker.main(argv) now resets the module-level _SHUTDOWN flag at entry, so repeated embedded/test invocations are not skipped after a prior shutdown signal. Core smoke tests passed with 13 tests; worker dry-run completed one cycle without sleeping."
+    },
+    {
+      "name": "health_check_missing_agents_no_data",
+      "command": "python aios\\agent_system\\health_check.py",
+      "status": "pass",
+      "evidence": "When aios/agent_system/agents.json is absent, health_check now returns health score 100 so the CLI exits successfully while still printing that agent data is missing. Covered by tests/test_core_smoke.py and direct CLI execution."
+    },
+    {
+      "name": "secret_fixture_noise_removed",
+      "command": "Strict changed-file secret scan plus integrated verifier secret literal scan",
+      "status": "pass",
+      "evidence": "Replaced continuous fake secret literals in GUI/browser fixtures with runtime-composed strings; targeted GUI redaction tests passed with 36 tests; strict changed-file scan returned 0 findings; verifier secret literal scan checked 174 files with 0 findings."
+    },
+    {
+      "name": "gui_agent_log_redaction",
+      "command": "python -m pytest tests\\test_gui_agent_events.py tests\\test_gui_agent_poc.py -q --tb=short",
+      "status": "pass",
+      "evidence": "Added redaction before GUI EventBus emission and before JSONL confirmation serialization. Targeted GUI event/confirmation tests now verify secret-like instruction text is redacted from persisted events and confirmation logs; affected test subset passed as part of 22 targeted tests."
+    },
+    {
+      "name": "browser_readonly_allowlist_hardening",
+      "command": "python -m pytest tests\\test_browser_adapter.py tests\\test_playwright_browser_adapter.py tests\\test_browser_readonly_task.py tests\\test_browser_readonly_validation.py tests\\test_ops_check_validation.py -q --tb=short",
+      "status": "pass",
+      "evidence": "Hardened read-only browser boundaries: explicit empty offline allowlist now blocks instead of inferring hosts; Playwright route guard aborts secret-like subrequest URLs; browser artifact validator rejects summary/event_flow URLs outside allowed_hosts. Targeted browser/ops-check validation subset passed with 32 tests."
+    },
+    {
+      "name": "deepseek_event_flow_isolation",
+      "command": "python examples\\deepseek_iching_64.py && python examples\\validate_deepseek_iching_64.py",
+      "status": "pass",
+      "evidence": "DeepSeek I Ching default output no longer uses the shared date-only directory. It now writes a unique timestamp-microseconds-pid-nonce run directory and latest_output_dir.txt. Validator rejects mixed dry-run/live event_flow artifacts; latest dry-run event_flow had 64 hexagram.completed events, 0 deepseek.* events, and 0 live mismatches."
+    },
+    {
+      "name": "entrypoint_smoke_checks",
+      "command": "gateway help, quickstart, GUI ops-check gate, DeepSeek I Ching dry-run, worker dry-run",
+      "status": "pass",
+      "evidence": "Gateway help printed without server start; quickstart wrote ignored data/quickstart_output artifacts; GUI ops-check gate wrote ignored runs/ops_check artifacts and validator returned ok=true; DeepSeek dry-run wrote ignored runs/iching artifacts and validator returned ok=true; worker dry-run stopped after one cycle without sleeping."
+    },
+    {
+      "name": "runtime_artifact_ignore_boundary",
+      "command": "git check-ignore -v runs\\iching\\deepseek_iching_64_20260511\\summary.json",
+      "status": "pass",
+      "evidence": ".gitignore line for runs/iching/ ignores generated DeepSeek I Ching runtime artifacts, including latest_output_dir.txt."
+    },
+    {
+      "name": "staging_scope_dry_run",
+      "command": "git add -n for four documented staging groups, followed by changed-file union comparison",
+      "status": "pass",
+      "evidence": "group1_dry_run_files=56; group2_dry_run_files=46; group3_dry_run_files=6; group4_dry_run_files=8; changed_files=116; group_union_files=116; missing_from_groups=0; extra_in_groups=0; cached_files=0; no real staging performed"
+    },
+    {
+      "name": "deepseek_powershell_helpers_parse",
+      "command": "PowerShell Parser.ParseFile for scripts\\run_deepseek_iching_live.ps1 and scripts\\save_deepseek_key_dpapi.ps1",
+      "status": "pass",
+      "evidence": "PowerShell parser returned no syntax errors; verifier secret-literal scan found 0 findings; helper stores DeepSeek key material under ignored data/secrets/** via Windows DPAPI and exposes DEEPSEEK_API_KEY only to the child live-run process."
+    },
+    {
+      "name": "diff_whitespace_check",
+      "command": "git diff --check",
+      "status": "pass",
+      "evidence": "No whitespace errors; Git reported Windows CRLF normalization warnings only."
+    }
+  ],
+  "unverified": [
+    "No full non-dry-run worker cycle was executed because it can perform discovery/analyze/digest and external maintenance writes.",
+    "Current checkout does not include aios/agent_system/agents.json, so health scoring with real agent data is unverified.",
+    "GUI agent POC was validated with dry-run and fake backends only; real Win32 input/screenshot execution was not performed.",
+    "DeepSeek I Ching live API mode was not executed; verified path is dry-run/resume with cached artifacts and api_call_count=0.",
+    "Current GUI ops-check defaults write local runtime artifacts under ignored runs/ops_check/**; these artifacts were not staged.",
+    "DeepSeek I Ching runtime artifacts under ignored runs/iching/** were not staged.",
+    "No commit, push, or pull request has happened yet."
+  ],
+  "next_required_action": "Review the working tree grouping, then stage and commit accepted files in small batches."
+}
