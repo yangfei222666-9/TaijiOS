@@ -2,7 +2,7 @@
 
 Created: 2026-05-11T01:33:06+08:00
 
-Last updated: 2026-05-11T18:34:15+08:00
+Last updated: 2026-05-11T18:43:57+08:00
 
 Machine: win11
 
@@ -14,7 +14,19 @@ Ref: master local working tree
 
 ## Status
 
-Local commits have been created. Push or PR creation was still pending when this packet was updated.
+Local commits have been created and pushed to GitHub branch `codex/taijios-project-bugfix-20260511-fulltree`. No PR was created because `origin/main` is a legacy redirect branch and is not a clean base for this full-tree work.
+
+Pushed branch:
+
+`https://github.com/yangfei222666-9/TaijiOS/tree/codex/taijios-project-bugfix-20260511-fulltree`
+
+Head commit:
+
+`96235c8d935a7e19741ef6c9636729e84706ad4f`
+
+Push note:
+
+The remote repository was archived/read-only. It was temporarily unarchived for the branch push and then re-archived. Final remote state checked with GitHub API: `archived=true`, `default_branch=main`.
 
 Latest verification:
 
@@ -49,12 +61,13 @@ Latest verification:
 
 ## Recommended Commit Strategy
 
-The safest commit sequence is two commits:
+This packet records the commit strategy that was used:
 
-1. Commit code/runtime work together by staging groups 1, 2, and 4 in the same commit.
-2. Commit audit and handoff evidence separately by staging group 3.
+1. Code/runtime work was committed as `8130874 Stabilize runtime and add agent workflows`.
+2. Audit and handoff evidence was committed as `a01e6bd Add cross-machine handoff evidence`.
+3. A post-commit DeepSeek live-validator fix was committed as `96235c8 Harden DeepSeek live artifact validation`.
 
-Reason: `.github/workflows/ci.yml` and `scripts/verify_project_health.py` now run GUI ops-checks and DeepSeek I Ching dry-run/validation. If group 1 is committed alone, CI can reference files from groups 2 and 4 that are not present yet. A four-commit split is still possible, but only with partial staging of CI/verifier changes or by landing groups 2 and 4 no later than the commit that introduces the final verifier.
+Reason: `.github/workflows/ci.yml` and `scripts/verify_project_health.py` now run GUI ops-checks and DeepSeek I Ching dry-run/validation. The runtime, GUI, and DeepSeek code needed to land together so the verifier never references absent files.
 
 ## Suggested Commit Groups
 
@@ -186,6 +199,8 @@ Note: `scripts/verify_project_health.py` now includes this runner and validator 
 ## Reviewer Notes
 
 - The working tree is intentionally large. Review by commit group, not as one undifferentiated patch.
+- The pushed branch is intentionally a full-tree branch because `origin/main` currently points at legacy redirect content; attempting to cherry-pick the work onto `origin/main` produced broad modify/delete conflicts.
+- A PR was not created. Treat the pushed branch as a source-of-truth review artifact until a maintainer decides whether to rebase, merge by strategy, or keep it as an archived branch.
 - `git add -n` now works in this Win11 workspace and confirms all four staging commands resolve to the intended files. The previous index-lock dry-run blocker is no longer current.
 - The GUI agent POC is validated with dry-run/offline/fake backends only. Real Win32 input and live browser execution remain unverified.
 - GUI EventBus payloads and JSONL confirmation records are redacted before persistence, but this pass still did not exercise real desktop input.

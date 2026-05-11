@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-05-11T18:34:15+08:00",
+  "created_at": "2026-05-11T18:43:57+08:00",
   "machine": "win11",
   "actor": "codex",
   "repo": "TaijiOS",
@@ -108,6 +108,12 @@
       "command": "git diff --check",
       "status": "pass",
       "evidence": "No whitespace errors; Git reported Windows CRLF normalization warnings only."
+    },
+    {
+      "name": "github_branch_push",
+      "command": "gh repo unarchive yangfei222666-9/TaijiOS --yes; git push -u origin codex/taijios-project-bugfix-20260511-fulltree; gh repo archive yangfei222666-9/TaijiOS --yes; git ls-remote --heads origin codex/taijios-project-bugfix-20260511-fulltree; gh api repos/yangfei222666-9/TaijiOS",
+      "status": "pass",
+      "evidence": "Pushed branch codex/taijios-project-bugfix-20260511-fulltree at 96235c8d935a7e19741ef6c9636729e84706ad4f. Remote repository was temporarily unarchived for the push and then re-archived; final remote state archived=true and default_branch=main. No PR was created because origin/main is a legacy redirect branch and cherry-picking the full-tree work onto it produced broad modify/delete conflicts."
     }
   ],
   "unverified": [
@@ -117,7 +123,7 @@
     "DeepSeek I Ching live API mode was not executed; verified path is dry-run/resume with cached artifacts and api_call_count=0.",
     "Current GUI ops-check defaults write local runtime artifacts under ignored runs/ops_check/**; these artifacts were not staged.",
     "DeepSeek I Ching runtime artifacts under ignored runs/iching/** were not staged.",
-    "No commit, push, or pull request has happened yet."
+    "No pull request was created because origin/main is not a clean base for this full-tree branch."
   ],
-  "next_required_action": "Review the working tree grouping, then stage and commit accepted files in small batches."
+  "next_required_action": "Mac or another reviewer should fetch codex/taijios-project-bugfix-20260511-fulltree, verify commit 96235c8d935a7e19741ef6c9636729e84706ad4f and rerun scripts/verify_project_health.py before any mainline merge decision."
 }
