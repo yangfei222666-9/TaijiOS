@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-05-11T19:30:01+08:00",
+  "created_at": "2026-05-12T16:13:37+08:00",
   "machine": "win11",
   "actor": "codex",
   "repo": "TaijiOS",
@@ -11,7 +11,7 @@
       "name": "project_health_verifier_full",
       "command": "python scripts\\verify_project_health.py",
       "status": "pass",
-      "evidence": "checks_run=14; checks_failed=0; pytest=103 passed; imported_candidates_all=102; import_failures=0; python_files_all=136; compile_errors=0; tracked_json_failures=0/28; handoff_parse_failures=0/4; secret_literal_files_checked=174; secret_literal_findings=0; pyflakes_findings_total=0; pyflakes_high_signal_findings=0; gui_agent_ops_check_gate=pass; gui_agent_ops_check_validate=pass; deepseek_iching_dry_run=pass; deepseek_iching_validate=pass; worker_dry_run=pass; no manual TMP/TEMP override required"
+      "evidence": "checks_run=14; checks_failed=0; pytest=105 passed; imported_candidates_all=102; import_failures=0; python_files_all=136; compile_errors=0; tracked_json_failures=0/28; handoff_parse_failures=0/4; secret_literal_files_checked=177; secret_literal_findings=0; pyflakes_findings_total=0; pyflakes_high_signal_findings=0; gui_agent_ops_check_gate=pass; gui_agent_ops_check_validate=pass; deepseek_iching_dry_run=pass; deepseek_iching_validate=pass; worker_dry_run=pass; no manual TMP/TEMP override required"
     },
     {
       "name": "project_health_verifier_ci_path",
@@ -30,6 +30,12 @@
       "command": "python -m pytest tests\\test_deepseek_iching_runner.py -q --tb=short",
       "status": "pass",
       "evidence": "DeepSeek validator now supports --live by resolving runs/iching/latest_live_output_dir.txt or discovering the latest completed live summary. Tests verify a later dry-run does not overwrite the live pointer and that live resolution can recover when the pointer is absent. Targeted DeepSeek tests passed with 15 tests."
+    },
+    {
+      "name": "mac_review_redis_optional_import_fix",
+      "command": "python -m pytest tests\\test_core_smoke.py -q --tb=short; python -c with redis import blocked; python scripts\\verify_project_health.py",
+      "status": "pass",
+      "evidence": "Mac read-only review found coherent_engine.core.cache imported redis.asyncio at module import time, but redis was not installed on Mac and was not declared in pyproject.toml. Redis is only a cache accelerator because LockPointCache already has a local memory fallback, so the fix makes redis optional at import time and falls back to local memory when redis is unavailable. Targeted core smoke tests passed with 14 tests; explicit blocked-redis subprocess returned {\"ok\": true}; full project verifier passed with 105 tests and checks_failed=0."
     },
     {
       "name": "deepseek_live_helper_fail_closed",
@@ -131,5 +137,5 @@
     "DeepSeek I Ching runtime artifacts under ignored runs/iching/** were not staged.",
     "No pull request was created because origin/main is not a clean base for this full-tree branch."
   ],
-  "next_required_action": "Mac or another reviewer should fetch codex/taijios-project-bugfix-20260511-fulltree, verify the current branch head, and rerun scripts/verify_project_health.py before any mainline merge decision."
+  "next_required_action": "Mac or another reviewer should fetch the updated codex/taijios-project-bugfix-20260511-fulltree head after the Redis optional-import fix, verify the current branch head, and rerun python3 scripts/verify_project_health.py --skip-tests before any full pass or merge decision."
 }

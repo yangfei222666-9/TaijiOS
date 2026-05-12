@@ -2,7 +2,7 @@
 
 Created: 2026-05-11T01:33:06+08:00
 
-Last updated: 2026-05-11T19:30:01+08:00
+Last updated: 2026-05-12T16:13:37+08:00
 
 Machine: win11
 
@@ -35,6 +35,13 @@ Remote clean-clone verification:
 - `runs/cross_machine_handoff/20260511/event_flow.jsonl` parsed with 44 JSONL events in the clone.
 - `python scripts\verify_project_health.py --skip-tests` passed inside the clean clone with `checks_run=13`, `checks_failed=0`.
 
+Mac read-only review follow-up:
+
+- Mac verified the offline zip and bundle integrity, bundle clone, and recovered HEAD `f39bd781c4262ea3426945b6e337067e11e7e7e0`.
+- Mac found a real P0 blocker: `python3 scripts/verify_project_health.py --skip-tests` failed because `coherent_engine.core.cache` imported `redis.asyncio` at module import time while `redis` was not installed and was not declared in `pyproject.toml`.
+- Win11 fixed this as an optional Redis import because `LockPointCache` already has a local memory fallback and Redis is a cache accelerator, not a required core dependency.
+- Added a core smoke test that blocks `redis` imports in a subprocess and verifies `LockPointCache` still uses local memory.
+
 Latest verification:
 
 - `python -m pytest tests\test_deepseek_iching_runner.py -q --tb=short` passed with 15 tests, including DeepSeek key whitespace handling, PowerShell helper regression coverage, and latest live output pointer coverage.
@@ -46,7 +53,9 @@ Latest verification:
 - `python examples\deepseek_iching_64.py` passed in dry-run mode with 64 completed hexagrams, 0 errors, 0 API calls, and a unique `runs/iching/deepseek_iching_64_<timestamp>_<microseconds>_<pid>_<nonce>/**` output directory.
 - `python examples\validate_deepseek_iching_64.py` passed by resolving `runs/iching/latest_output_dir.txt` and checking the latest unique run artifacts.
 - Latest dry-run `event_flow.jsonl` had 64 `hexagram.completed` events, 0 `deepseek.*` live request events, and 0 live-flag mismatches. Validator now rejects mixed dry-run/live event_flow artifacts.
-- `python scripts\verify_project_health.py` passed without manual `TMP/TEMP` overrides with 103 tests, 102 import candidates, 136 Python files compiled, 28 tracked JSON/JSONL files parsed, 4 handoff files parsed, 174 files checked by secret-literal scan with 0 findings, GUI ops-check gate + validator green, DeepSeek I Ching dry-run + validator green, worker dry-run green, and 0 pyflakes findings.
+- `python -m pytest tests\test_core_smoke.py -q --tb=short` passed with 14 tests after adding Redis-missing fallback coverage.
+- A subprocess with `redis` imports explicitly blocked imported `coherent_engine.core.cache`, wrote to `LockPointCache`, and read back `{"ok": true}` from the local memory fallback.
+- `python scripts\verify_project_health.py` passed without manual `TMP/TEMP` overrides with 105 tests, 102 import candidates, 136 Python files compiled, 28 tracked JSON/JSONL files parsed, 4 handoff files parsed, 177 files checked by secret-literal scan with 0 findings, GUI ops-check gate + validator green, DeepSeek I Ching dry-run + validator green, worker dry-run green, and 0 pyflakes findings.
 - `python scripts\verify_project_health.py --skip-tests` passed with 13 checks and 0 failures, including the new secret-literal scan.
 - `python -m pytest tests\test_browser_adapter.py tests\test_browser_readonly_task.py tests\test_browser_readonly_validation.py tests\test_ops_check_validation.py tests\test_playwright_browser_adapter.py tests\test_policy_matrix.py tests\test_shadow_mode_browser_poc.py -q --tb=short` passed with 36 tests after fake secret fixtures were changed to runtime-composed strings.
 - Strict changed-file secret scan returned no findings after removing continuous fake secret literals from GUI/browser fixtures.

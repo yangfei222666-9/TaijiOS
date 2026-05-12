@@ -1,7 +1,11 @@
 # core/cache.py 
 import json 
 from typing import Dict, Any, Optional 
-import redis.asyncio as redis 
+
+try:
+    import redis.asyncio as redis
+except ModuleNotFoundError:
+    redis = None
 
 class LockPointCache: 
     """锁点缓存（加速）""" 
@@ -13,6 +17,9 @@ class LockPointCache:
 
     async def _ensure_redis(self):
         if self.redis is None:
+            if redis is None:
+                self.redis = False
+                return
             try:
                 self.redis = redis.from_url(self.redis_url, decode_responses=True)
                 await self.redis.ping()

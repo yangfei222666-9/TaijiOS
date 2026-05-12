@@ -1,5 +1,6 @@
 import pytest
 import json
+import subprocess
 import sys
 import types
 
@@ -109,6 +110,41 @@ def test_coherent_orchestrator_imports_without_optional_modules():
     assert BaseModule is not None
     assert ModuleOrchestrator is not None
     assert PipelineExecutor is not None
+
+
+def test_lock_point_cache_falls_back_when_redis_package_missing():
+    script = """
+import asyncio
+import importlib.abc
+import json
+import sys
+
+class BlockRedis(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "redis" or fullname.startswith("redis."):
+            raise ModuleNotFoundError("blocked redis")
+        return None
+
+sys.meta_path.insert(0, BlockRedis())
+
+from coherent_engine.core.cache import LockPointCache
+
+async def main():
+    cache = LockPointCache()
+    await cache.set("demo", {"ok": True})
+    print(json.dumps(await cache.get("demo"), sort_keys=True))
+
+asyncio.run(main())
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert '{"ok": true}' in result.stdout
 
 
 def test_agent_system_auxiliary_modules_import_without_legacy_adapters(tmp_path, monkeypatch):
