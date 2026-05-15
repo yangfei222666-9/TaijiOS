@@ -4,8 +4,9 @@ Created: 2026-05-10
 Producer machine: Win11
 Producer actor: Codex
 Repo: TaijiOS
-Local path: `C:\Users\A\TaijiOS`
-Git state before work: `master...origin/master [ahead 1]`, clean worktree
+Initial producer local path: `C:\Users\A\TaijiOS`
+Initial Win11 git state report: `master...origin/master [ahead 1]`, clean worktree
+GitHub review target after repair: `cross-machine-handoff-protocol-main`
 
 ## Trigger
 
@@ -50,7 +51,7 @@ Run local checks after file creation:
 
 ## Next Machine Action
 
-Mac should perform read-only review:
+Mac should perform branch review:
 
 1. Read this packet.
 2. Parse the event flow and verification summary.
@@ -61,7 +62,7 @@ Mac should perform read-only review:
 ## Must Not Be Assumed
 
 - No tests of TaijiOS runtime behavior have been run for this document-only change.
-- No GitHub push or PR has happened yet.
+- The branch has been pushed for review; no PR, merge, default-branch change, or runtime promotion is claimed by this packet.
 - Telegram liveness is not considered completion evidence.
 - This is a protocol bootstrap, not proof that rule promotion already affects system behavior.
 - This packet shares project memory only. It does not claim access to any machine's internal model memory.
