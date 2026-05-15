@@ -9,6 +9,12 @@ data/
 events/
 *.jsonl
 
+# Tracked cross-machine evidence artifacts
+!runs/
+!runs/cross_machine_handoff/
+!runs/cross_machine_handoff/**/
+!runs/cross_machine_handoff/**/event_flow.jsonl
+
 # Python
 __pycache__/
 *.pyc

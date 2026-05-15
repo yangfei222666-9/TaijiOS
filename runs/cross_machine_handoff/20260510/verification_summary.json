@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-05-10T15:15:00Z",
+  "updated_at": "2026-05-15T04:58:24Z",
+  "machine": "mac",
+  "actor": "codex",
+  "repo": "TaijiOS",
+  "git_ref": "cross-machine-handoff-protocol-main repair over d9ee207",
+  "status": "pass",
+  "checks": [
+    {
+      "name": "required_files_exist",
+      "command": "test -f docs/CROSS_MACHINE_OPERATING_PROTOCOL.md && test -f runs/cross_machine_handoff/20260510/event_flow.jsonl && test -f runs/cross_machine_handoff/20260510/context_packet.md && test -f runs/cross_machine_handoff/20260510/verification_summary.json",
+      "status": "pass",
+      "evidence": "All four required artifact paths exist."
+    },
+    {
+      "name": "event_flow_jsonl_parse",
+      "command": "jq -c . runs/cross_machine_handoff/20260510/event_flow.jsonl",
+      "status": "pass",
+      "evidence": "The event flow parses successfully as JSONL after stale T7 side-lane references were removed from the protocol-bootstrap scope."
+    },
+    {
+      "name": "verification_summary_json_parse",
+      "command": "jq empty runs/cross_machine_handoff/20260510/verification_summary.json",
+      "status": "pass",
+      "evidence": "The verification summary parsed as JSON."
+    },
+    {
+      "name": "event_flow_git_trackability",
+      "command": "git add --dry-run runs/cross_machine_handoff/20260510/event_flow.jsonl",
+      "status": "pass",
+      "evidence": "The .gitignore exception keeps the handoff event flow trackable."
+    },
+    {
+      "name": "project_memory_boundaries_documented",
+      "command": "Read docs\\\\CROSS_MACHINE_OPERATING_PROTOCOL.md and runs\\\\cross_machine_handoff\\\\20260510\\\\context_packet.md",
+      "status": "pass",
+      "evidence": "Protocol and context packet now state that shared project memory is artifact-based only, excludes secrets and unverified state, and requires reviewed lessons before long-term rule promotion."
+    },
+    {
+      "name": "branch_scope",
+      "command": "git diff --name-only origin/main HEAD",
+      "status": "pass",
+      "evidence": "Changed-file scope is limited to .gitignore plus docs/CROSS_MACHINE_OPERATING_PROTOCOL.md and the three runs/cross_machine_handoff/20260510 artifacts."
+    },
+    {
+      "name": "missing_artifact_reference_scan",
+      "command": "Extract relative artifact paths from event_flow.jsonl and verify each exists in the branch.",
+      "status": "pass",
+      "evidence": "No event-flow artifact path points to a missing file in the repaired protocol-bootstrap scope."
+    },
+    {
+      "name": "secret_scan",
+      "command": "rg -n -i high-signal secret patterns across the changed protocol artifacts",
+      "status": "pass",
+      "evidence": "No high-signal API key, token, password assignment, bearer token, or private-key pattern was found in the changed artifacts."
+    }
+  ],
+  "unverified": [
+    "Runtime behavior was not tested because this bootstrap only adds operating protocol documentation and handoff artifacts.",
+    "No pull request, merge, default-branch change, runtime workflow, rule promotion, judgment, paper-buy, trade, or promote action is claimed.",
+    "Win11 unrelated dirty or untracked files under C:\\\\Users\\\\A\\\\TaijiOS remain outside this branch and are not verified by Mac."
+  ],
+  "next_required_action": "After push, verify the remote branch SHA, archive state, changed-file scope, JSONL/JSON parsing, and absence of missing artifact references before any PR, merge, or default-branch change."
+}
